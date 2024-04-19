@@ -1,0 +1,18 @@
+{
+  "name": "git",
+  "version": "1.0.0",
+  "description": "coding challanges git ",
+  "main": "index.ts",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git"
+  },
+  "bin": {
+    "ccgit": "index.ts"
+  },
+  "author": "QuickerMaths",
+  "license": "MIT"
+}
