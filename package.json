@@ -1,18 +1,28 @@
 {
   "name": "git",
   "version": "1.0.0",
-  "description": "coding challanges git ",
-  "main": "index.ts",
+  "description": "coding challanges git",
+  "main": "dist/bin.js",
+  "type": "commonjs",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "build": "esbuild src/bin.ts --bundle --platform=node --outfile=dist/bin.js --packages=external"
   },
   "repository": {
     "type": "git",
     "url": "git"
   },
   "bin": {
-    "ccgit": "index.ts"
+    "ccgit": "dist/bin.js"
   },
   "author": "QuickerMaths",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@types/yargs": "^17.0.32",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "yargs": "^17.7.2"
+  }
 }
