@@ -42,9 +42,20 @@ async function writeConfigFile(gitDirPath: string) {
 }
 
 async function createBranchesDir(gitDirPath: string) { 
-    const dirPath = path.join(gitDirPath, 'branches')
+    const dirPath = path.join(gitDirPath, 'branches');
     
-    await fs.mkdir(dirPath, { recursive: true })
+    await fs.mkdir(dirPath, { recursive: true });
+}
+
+async function createObjectsDir(gitDirPath: string) {
+    const objectsDirPath = path.join(gitDirPath, 'objects');
+    await fs.mkdir(objectsDirPath, { recursive: true })
+    
+    const infoDirPath = path.join(objectsDirPath, 'info');
+    await fs.mkdir(infoDirPath, { recursive: true });
+
+    const packDirPath = path.join(objectsDirPath, 'pack');
+    await fs.mkdir(packDirPath, { recursive: true });
 }
 
 function sendSuccessMessage(gitDirPath: string, quiet: boolean, isReinitialized: boolean) {
@@ -64,6 +75,7 @@ export async function init(argvPath: string, argvQuiet: boolean){
     await writeHeadFile(gitDirPath);
     await writeDescriptionFile(gitDirPath);
     await writeConfigFile(gitDirPath);
-    await createBranchesDir(gitDirPath)
+    await createBranchesDir(gitDirPath);
+    await createObjectsDir(gitDirPath);
     sendSuccessMessage(gitDirPath, argvQuiet, isReinitialized);
 }
