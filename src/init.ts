@@ -27,6 +27,13 @@ async function writeHeadFile(gitDirPath: string) {
     ensureExists(filePath, writeHeadFile);
 }
 
+async function writeDescriptionFile(gitDirPath: string) {
+    const filePath = path.join(gitDirPath, 'description');
+    const writeDescriptionFile = () => fs.writeFile(filePath, 'Unnamed repository; edit this file "description" to name the repository.\n');
+
+    ensureExists(filePath, writeDescriptionFile);
+}
+
 function sendSuccessMessage(gitDirPath: string, quiet: boolean, isReinitialized: boolean) {
     if(!quiet) console.log(`${isReinitialized ? 'Reinitialized existing' : 'Initialized empty'} git repository in`, gitDirPath);
 }
@@ -40,6 +47,8 @@ export async function init(argvPath: string, argvQuiet: boolean){
     } catch {
         await createGitDir(gitDirPath);
     }
+
     await writeHeadFile(gitDirPath);
+    await writeDescriptionFile(gitDirPath);
     sendSuccessMessage(gitDirPath, argvQuiet, isReinitialized);
 }
