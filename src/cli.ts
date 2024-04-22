@@ -12,7 +12,13 @@ export function cli(args: string[]) {
         })
     }, 
     async (argv) => {
-        await init(argv.path)
+        await init(argv.path, argv.quiet)
+    })
+    .option('quiet', {
+        alias: 'q',
+        type: 'boolean',
+        description: 'Print only error messages.',
+        default: false
     })
     .demandCommand(1)
 }

@@ -27,11 +27,11 @@ async function writeHeadFile(gitDirPath: string) {
     ensureExists(filePath, writeHeadFile);
 }
 
-function sendSuccessMessage(gitDirPath: string, isReinitialized: boolean) {
-    console.log(`${isReinitialized ? 'Reinitialized existing' : 'Initialized empty'} git repository in`, gitDirPath);
+function sendSuccessMessage(gitDirPath: string, quiet: boolean, isReinitialized: boolean) {
+    if(!quiet) console.log(`${isReinitialized ? 'Reinitialized existing' : 'Initialized empty'} git repository in`, gitDirPath);
 }
 
-export async function init(argvPath: string){
+export async function init(argvPath: string, argvQuiet: boolean){
     const gitDirPath = path.resolve(process.cwd(), argvPath, '.git');
 
     try {
@@ -41,5 +41,5 @@ export async function init(argvPath: string){
         await createGitDir(gitDirPath);
     }
     await writeHeadFile(gitDirPath);
-    sendSuccessMessage(gitDirPath, isReinitialized);
+    sendSuccessMessage(gitDirPath, argvQuiet, isReinitialized);
 }
