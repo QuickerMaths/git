@@ -41,6 +41,12 @@ async function writeConfigFile(gitDirPath: string) {
     ensureExists(filePath, writeConfigFile);
 }
 
+async function createBranchesDir(gitDirPath: string) { 
+    const dirPath = path.join(gitDirPath, 'branches')
+    
+    await fs.mkdir(dirPath, { recursive: true })
+}
+
 function sendSuccessMessage(gitDirPath: string, quiet: boolean, isReinitialized: boolean) {
     if(!quiet) console.log(`${isReinitialized ? 'Reinitialized existing' : 'Initialized empty'} git repository in`, gitDirPath);
 }
@@ -58,5 +64,6 @@ export async function init(argvPath: string, argvQuiet: boolean){
     await writeHeadFile(gitDirPath);
     await writeDescriptionFile(gitDirPath);
     await writeConfigFile(gitDirPath);
+    await createBranchesDir(gitDirPath)
     sendSuccessMessage(gitDirPath, argvQuiet, isReinitialized);
 }
