@@ -58,6 +58,17 @@ async function createObjectsDir(gitDirPath: string) {
     await fs.mkdir(packDirPath, { recursive: true });
 }
 
+async function createRefsDir(gitDirPath: string) {
+    const refsDirPath = path.join(gitDirPath, 'refs');
+    await fs.mkdir(refsDirPath, { recursive: true })
+    
+    const tagsDirPath = path.join(refsDirPath, 'tags');
+    await fs.mkdir(tagsDirPath, { recursive: true });
+
+    const headsDirPath = path.join(refsDirPath, 'heads');
+    await fs.mkdir(headsDirPath, { recursive: true });
+}
+
 function sendSuccessMessage(gitDirPath: string, quiet: boolean, isReinitialized: boolean) {
     if(!quiet) console.log(`${isReinitialized ? 'Reinitialized existing' : 'Initialized empty'} git repository in`, gitDirPath);
 }
@@ -77,5 +88,6 @@ export async function init(argvPath: string, argvQuiet: boolean){
     await writeConfigFile(gitDirPath);
     await createBranchesDir(gitDirPath);
     await createObjectsDir(gitDirPath);
+    await createRefsDir(gitDirPath);
     sendSuccessMessage(gitDirPath, argvQuiet, isReinitialized);
 }
