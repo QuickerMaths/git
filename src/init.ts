@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'node:path';
 
+const defaultFilesPath = path.resolve(__dirname, '..', 'default-files')
 let isReinitialized = false;
 
 async function ensureExists(dirPath: string, callback: () => Promise<void>) {
@@ -22,7 +23,7 @@ async function createGitDir(gitDirPath: string) {
 
 async function writeHeadFile(gitDirPath: string) {
     const filePath = path.join(gitDirPath, 'HEAD');
-    const defaultHeadFile = await fs.readFile(path.resolve(__dirname, '..', 'default-files' , 'HEAD'), 'utf-8');
+    const defaultHeadFile = await fs.readFile(path.resolve(defaultFilesPath , 'HEAD'), 'utf-8');
     const writeHeadFile = () => fs.writeFile(filePath, defaultHeadFile, 'utf-8');
 
     ensureExists(filePath, writeHeadFile);
@@ -30,7 +31,7 @@ async function writeHeadFile(gitDirPath: string) {
 
 async function writeDescriptionFile(gitDirPath: string) {
     const filePath = path.join(gitDirPath, 'description');
-    const defaultDescriptionFile = await fs.readFile(path.resolve(__dirname, '..', 'default-files' , 'description'), 'utf-8');
+    const defaultDescriptionFile = await fs.readFile(path.resolve(defaultFilesPath, 'description'), 'utf-8');
     const writeDescriptionFile = () => fs.writeFile(filePath, defaultDescriptionFile, 'utf-8');
 
     ensureExists(filePath, writeDescriptionFile);
@@ -38,7 +39,7 @@ async function writeDescriptionFile(gitDirPath: string) {
 
 async function writeConfigFile(gitDirPath: string) {
     const filePath = path.join(gitDirPath, 'config');
-    const defaultConfigFile = await fs.readFile(path.resolve(__dirname, '..', 'default-files' , 'config'), 'utf-8');
+    const defaultConfigFile = await fs.readFile(path.resolve(defaultFilesPath, 'config'), 'utf-8');
     const writeConfigFile = () => fs.writeFile(filePath, defaultConfigFile, 'utf-8');
 
     ensureExists(filePath, writeConfigFile);
