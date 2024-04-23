@@ -22,21 +22,24 @@ async function createGitDir(gitDirPath: string) {
 
 async function writeHeadFile(gitDirPath: string) {
     const filePath = path.join(gitDirPath, 'HEAD');
-    const writeHeadFile = () => fs.writeFile(filePath, 'ref: refs/heads/master\n');
+    const defaultHeadFile = await fs.readFile(path.resolve(__dirname, '..', 'default-files' , 'HEAD'), 'utf-8');
+    const writeHeadFile = () => fs.writeFile(filePath, defaultHeadFile, 'utf-8');
 
     ensureExists(filePath, writeHeadFile);
 }
 
 async function writeDescriptionFile(gitDirPath: string) {
     const filePath = path.join(gitDirPath, 'description');
-    const writeDescriptionFile = () => fs.writeFile(filePath, 'Unnamed repository; edit this file "description" to name the repository.\n');
+    const defaultDescriptionFile = await fs.readFile(path.resolve(__dirname, '..', 'default-files' , 'description'), 'utf-8');
+    const writeDescriptionFile = () => fs.writeFile(filePath, defaultDescriptionFile, 'utf-8');
 
     ensureExists(filePath, writeDescriptionFile);
 }
 
 async function writeConfigFile(gitDirPath: string) {
     const filePath = path.join(gitDirPath, 'config');
-    const writeConfigFile = () => fs.writeFile(filePath, '[core]\n\trepositoryformatversion = 0\n\tfilemode = false\n\tbare = false\n\tlogallrefupdates = true\n');
+    const defaultConfigFile = await fs.readFile(path.resolve(__dirname, '..', 'default-files' , 'config'), 'utf-8');
+    const writeConfigFile = () => fs.writeFile(filePath, defaultConfigFile, 'utf-8');
 
     ensureExists(filePath, writeConfigFile);
 }
