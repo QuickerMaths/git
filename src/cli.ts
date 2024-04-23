@@ -12,7 +12,7 @@ export function cli(args: string[]) {
         })
     }, 
     async (argv) => {
-        await init(argv.path, argv.quiet)
+        await init(argv.path, !!argv.quiet)
     })
     .option('quiet', {
         alias: 'q',
