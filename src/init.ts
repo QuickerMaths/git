@@ -15,9 +15,8 @@ async function ensureExists(dirPath: string, callback: () => Promise<void>) {
 async function createGitDir(gitDirPath: string) {
     try {
         await fs.mkdir(gitDirPath, { recursive: true });
-    } catch(err) {
-        console.log('Unanble to create .git directory', err);
-        process.exit(1);
+    } catch(err: any) {
+        throw Error('Unanble to create .git directory', err);
     }
 }
 
@@ -74,7 +73,7 @@ async function createRefsDir(gitDirPath: string) {
 }
 
 function sendSuccessMessage(gitDirPath: string, quiet: boolean, isReinitialized: boolean) {
-    if(!quiet) console.log(`${isReinitialized ? 'Reinitialized existing' : 'Initialized empty'} git repository in`, gitDirPath);
+    if(!quiet) return `${isReinitialized ? 'Reinitialized existing' : 'Initialized empty'} git repository in ${gitDirPath}` 
 }
 
 export async function init(argvPath: string, argvQuiet: boolean){
@@ -93,5 +92,5 @@ export async function init(argvPath: string, argvQuiet: boolean){
     await createBranchesDir(gitDirPath);
     await createObjectsDir(gitDirPath);
     await createRefsDir(gitDirPath);
-    sendSuccessMessage(gitDirPath, argvQuiet, isReinitialized);
+    return sendSuccessMessage(gitDirPath, argvQuiet, isReinitialized);
 }

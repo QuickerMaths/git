@@ -3,6 +3,18 @@ import { hideBin } from 'yargs/helpers'
 import { init } from './init.ts';
 import { hashObject } from './hash-object.ts';
 
+async function commandWrapper(callback: () => Promise<string | undefined>) {
+    try {
+        const output = await callback();
+        if(output) process.stdout.write(output);
+        process.exit(0);
+    } catch(error) {
+        const e = error as Error;
+        process.stderr.write(e.message);
+        process.exit(1);
+    }
+}
+
 export function cli(args: string[]) {
     return yargs(hideBin(args))
     .command(
@@ -21,7 +33,7 @@ export function cli(args: string[]) {
                 default: false
             })
         }, 
-        async (argv) => await init(argv.path, !!argv.quiet)
+        async (argv) => await commandWrapper(() => init(argv.path, argv.quiet)) 
     )
     .command(
         'hash-object [file]', 
@@ -46,8 +58,6 @@ export function cli(args: string[]) {
                     default: false
                 })
             },
-            async (argv) => await hashObject(argv.file, argv.type)
+            async (argv) => await commandWrapper(() => hashObject(argv.file, argv.type))
     )
 }
-
-
