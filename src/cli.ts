@@ -38,10 +38,16 @@ async function ensureGitRepo(): Promise<string> {
   process.exit(1);
 }
 
-async function commandWrapper(callback: () => Promise<string | undefined>) {
+async function commandWrapper(callback: () => Promise<string | string[] | undefined | void>) {
     try {
         const output = await callback();
-        if(output) process.stdout.write(output + '\r\n');
+        if(output) {
+            if(Array.isArray(output)) {
+                output.forEach((line) => process.stdout.write(line + '\n'));
+            } else {
+                process.stdout.write(output + '\n');
+            }
+        } 
         process.exit(0);
     } catch(error) {
         const e = error as Error;
