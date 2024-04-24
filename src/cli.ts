@@ -77,14 +77,13 @@ export function cli(args: string[]) {
         async (argv) => await commandWrapper(() => init(argv.path, argv.quiet)) 
     )
     .command(
-        'hash-object [file]', 
-        'computes the object ID value for an object with specified type with contents of the named file, and optionally writes the resulting object into database', 
+        'hash-object [files..]', 
+        'computes the object ID value for an object with specified type with contents of the named files or stdin if --stdin option is invoked, and optionally writes the resulting objects into database', 
             (argv) => {
                 return argv
-                .positional('file', {
-                    describe: 'file to hash',
-                    type: 'string',
-                    default: ''
+                .positional('files', {
+                    describe: 'files to hash',
+                    default: [] 
                 })
                 .option('type', {
                     alias: 't',
@@ -106,7 +105,7 @@ export function cli(args: string[]) {
             },
             async (argv) => {
                 const gitRoot = await ensureGitRepo()
-                await commandWrapper(() => hashObject(gitRoot, argv.file, argv.type, argv.write, !!argv.stdin))
+                await commandWrapper(() => hashObject(gitRoot, argv.files, argv.type, argv.write, !!argv.stdin))
             }
     )
 }

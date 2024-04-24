@@ -8,7 +8,7 @@ function isType(type: string): type is GitObjectsType  {
     return GitObjects.includes(type);
 }
 
-async function processInput(filePath: string, stdin: boolean) { 
+async function processInput(filePaths: string[], stdin: boolean) { 
     const contents: Buffer[] = [];
 
     if(stdin) {
@@ -20,10 +20,10 @@ async function processInput(filePath: string, stdin: boolean) {
         contents.push(stdinContents);
     } 
     
-    // if not provided defaults to  empty string
-    if(!!filePath){
-        const fileContents = await fs.readFile(filePath);
-        contents.push(fileContents);
+    // if not provided defaults to  empty array
+    if(filePaths.length){
+        const filesContents = await Promise.all(filePaths.map(async (filePath) => await fs.readFile(filePath)));
+        contents.push(...filesContents);
     }
 
     return contents;
@@ -50,22 +50,23 @@ async function hashContents(gitRoot:string, type: string, write: boolean, conten
     }));
 }
 
-export async function hashObject(gitRoot: string, file: string, type: string, write: boolean, stdin: boolean) {
+export async function hashObject(gitRoot: string, files: string[], type: string, write: boolean, stdin: boolean) {
     if(!isType(type)) throw Error(`fatal: invalid object '${type}'`);
     if(type !== 'blob') throw Error(`fatal: ${type} is not supported, try blob`);
+    
+    const filePaths = [];
 
-    const filePath = path.join(process.cwd(), file);
-
-    try {
-        await fs.access(filePath);
-        const contents = await processInput(filePath, stdin);
-        return await hashContents(gitRoot, type, write, contents);
-    } catch(error: any) {
-        if(error.code === "ENOENT"){
-            throw Error(`fatal: Cannot open '${file}': No such file or directory`);
-        } else {
-            throw error;
+    for(const file of files) {
+        try {
+            await fs.access(file);
+            const filePath = path.resolve(gitRoot, file);
+            filePaths.push(filePath);
+        } catch {
+            throw Error(`fatal: Cannot open '${file}': No such file or directory.`);
         }
     }
+
+    const contents = await processInput(filePaths, stdin);
+    return await hashContents(gitRoot, type, write, contents);
 }
 
