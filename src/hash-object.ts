@@ -8,8 +8,18 @@ function isType(type: string): type is GitObjectsType  {
     return GitObjects.includes(type);
 }
 
-async function hashFile(gitRoot:string, filePath: string, type: string, write: boolean) {
-    const contents = await fs.readFile(filePath);
+async function hashFile(gitRoot:string, filePath: string, type: string, write: boolean, stdin: boolean) {
+    let contents: Buffer;
+
+    if(stdin) {
+        contents = await new Promise(function(resolve, _reject) {
+            process.stdin.once("data", function(data) {
+                resolve(data);
+            });
+        });
+    } else {
+        contents = await fs.readFile(filePath);
+    }
 
     const bufferToHash = Buffer.from(`${type} ${contents.byteLength}\0${contents}`)
     
@@ -29,7 +39,7 @@ async function hashFile(gitRoot:string, filePath: string, type: string, write: b
     return hash;
 }
 
-export async function hashObject(gitRoot: string, file: string, type: string, write: boolean) {
+export async function hashObject(gitRoot: string, file: string, type: string, write: boolean, stdin: boolean) {
     if(!isType(type)) throw Error(`fatal: invalid object '${type}'`);
     if(type !== 'blob') throw Error(`fatal: ${type} is not supported, try blob`);
 
@@ -37,7 +47,7 @@ export async function hashObject(gitRoot: string, file: string, type: string, wr
 
     try {
         await fs.access(filePath);
-        const hash = await hashFile(gitRoot, filePath, type, write);
+        const hash = await hashFile(gitRoot, filePath, type, write, stdin);
         return hash;
     } catch(error: any) {
         if(error.code === "ENOENT"){

@@ -92,10 +92,15 @@ export function cli(args: string[]) {
                     description: 'actually write the object into the database',
                     default: false
                 })
+                .option('stdin', {
+                    type: 'boolean',
+                    description: 'read the object from standard input instead of the file',
+                    defualt: false
+                })
             },
             async (argv) => {
                 const gitRoot = await ensureGitRepo()
-                await commandWrapper(() => hashObject(gitRoot, argv.file, argv.type, argv.write))
+                await commandWrapper(() => hashObject(gitRoot, argv.file, argv.type, argv.write, !!argv.stdin))
             }
     )
 }
