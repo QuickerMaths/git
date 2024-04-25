@@ -1,8 +1,8 @@
+import { createHash } from 'crypto';
 import fs from 'fs/promises';
 import path from 'node:path';
-import { GitObjects, GitObjectsType } from './types';
-import { createHash } from 'crypto';
 import zlib from 'zlib';
+import { GitObjectsType, GitObjects } from './types/types';
 
 function isType(type: string): type is GitObjectsType  {
     return GitObjects.includes(type);

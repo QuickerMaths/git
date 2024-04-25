@@ -1,9 +1,9 @@
 import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers'
-import { init } from './init.ts';
-import { hashObject } from './hash-object.ts';
-import path from 'node:path'
-import fs from 'fs/promises'
+import { hideBin } from 'yargs/helpers';
+import path from 'node:path';
+import fs from 'fs/promises';
+import { hashObject } from './commands/hash-object';
+import { init } from './commands/init';
 
 async function exists(path: string) {
     try {
