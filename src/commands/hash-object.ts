@@ -1,53 +1,10 @@
-import { createHash } from 'crypto';
 import fs from 'fs/promises';
 import path from 'node:path';
-import zlib from 'zlib';
 import { GitObjectsType, GitObjects } from '../types/types';
+import { hashContents } from '../utils/hashContents';
 
 function isType(type: string): type is GitObjectsType  {
     return GitObjects.includes(type);
-}
-
-async function processInput(filePaths: string[], stdin: boolean) { 
-    const contents: Buffer[] = [];
-
-    if(stdin) {
-        const stdinContents: Buffer = await new Promise(function(resolve, _reject) {
-            process.stdin.on("data", function(data) {
-                resolve(data);
-            });
-        });
-        contents.push(stdinContents);
-    } 
-    
-    // if not provided defaults to  empty array
-    if(filePaths.length){
-        const filesContents = await Promise.all(filePaths.map(async (filePath) => await fs.readFile(filePath)));
-        contents.push(...filesContents);
-    }
-
-    return contents;
-}
-
-async function hashContents(gitRoot:string, type: string, write: boolean, contents: Buffer[]) {
-    return Promise.all(contents.map(async (content) => {
-        const bufferToHash = Buffer.from(`${type} ${content.byteLength}\0${content}`)
-
-        const hash = createHash('sha1').update(bufferToHash).digest('hex');
-
-        if(write) {
-            const blobDirName = hash.substring(0, 2);
-            const blobName = hash.substring(2, hash.length)
-            const compressedContent = zlib.deflateSync(bufferToHash);
-            const pathToBlobDir = path.resolve(gitRoot, '.git', 'objects', blobDirName);
-            const pathToBlobFile = path.join(pathToBlobDir, blobName); 
-
-            await fs.mkdir(pathToBlobDir, { recursive: true });
-            await fs.writeFile(pathToBlobFile, compressedContent);
-        }
-
-        return hash;
-    }));
 }
 
 export async function hashObject(gitRoot: string, files: string[], type: string, write: boolean, stdin: boolean) {
@@ -66,7 +23,6 @@ export async function hashObject(gitRoot: string, files: string[], type: string,
         }
     }
 
-    const contents = await processInput(filePaths, stdin);
-    return await hashContents(gitRoot, type, write, contents);
+    return await hashContents(gitRoot, type, write, filePaths, stdin);
 }
 
