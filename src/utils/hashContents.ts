@@ -3,47 +3,30 @@ import path from "path";
 import fs from 'fs/promises';
 import zlib from 'zlib';
 
-async function processInput(filePaths: string[], stdin: boolean) { 
-    const contents: Buffer[] = [];
-
-    if(stdin) {
-        const stdinContents: Buffer = await new Promise(function(resolve, _reject) {
+export async function getStdin() { 
+        return await new Promise(function(resolve, _reject) {
             process.stdin.on("data", function(data) {
                 resolve(data);
             });
         });
-        contents.push(stdinContents);
-    } 
-    
-    // if not provided defaults to  empty array
-    if(filePaths.length){
-        const filesContents = await Promise.all(filePaths.map(async (filePath) => await fs.readFile(filePath)));
-        contents.push(...filesContents);
-    }
-
-    return contents;
 }
 
-export async function hashContents(gitRoot:string, type: string, write: boolean, filePaths: string[], stdin: boolean) {
-    const contents = await processInput(filePaths, stdin);
+export async function hashContent(gitRoot:string, type: string, write: boolean, content: Buffer) {
+    const bufferToHash = Buffer.from(`${type} ${content.byteLength}\0${content}`)
 
-    return Promise.all(contents.map(async (content) => {
-        const bufferToHash = Buffer.from(`${type} ${content.byteLength}\0${content}`)
+    const hash = createHash('sha1').update(bufferToHash).digest('hex');
 
-        const hash = createHash('sha1').update(bufferToHash).digest('hex');
+    if(write) {
+        const blobDirName = hash.substring(0, 2);
+        const blobName = hash.substring(2, hash.length)
+        const compressedContent = zlib.deflateSync(bufferToHash);
+        const pathToBlobDir = path.resolve(gitRoot, '.git', 'objects', blobDirName);
+        const pathToBlobFile = path.join(pathToBlobDir, blobName); 
 
-        if(write) {
-            const blobDirName = hash.substring(0, 2);
-            const blobName = hash.substring(2, hash.length)
-            const compressedContent = zlib.deflateSync(bufferToHash);
-            const pathToBlobDir = path.resolve(gitRoot, '.git', 'objects', blobDirName);
-            const pathToBlobFile = path.join(pathToBlobDir, blobName); 
+        await fs.mkdir(pathToBlobDir, { recursive: true });
+        await fs.writeFile(pathToBlobFile, compressedContent);
+    }
 
-            await fs.mkdir(pathToBlobDir, { recursive: true });
-            await fs.writeFile(pathToBlobFile, compressedContent);
-        }
-
-        return hash;
-    }));
+    return hash;
 }
 
