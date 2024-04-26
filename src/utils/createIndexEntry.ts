@@ -39,8 +39,7 @@ export async function createIndexEntry(file: string, gitRoot: string): Promise<I
         sha: sha, 
         name: filePath, 
         stage: Stage.ZERO,
-        assumeValid: true,
-        extended: 0,
+        assumeValid: 1,
         indentToAdd: false,
         skipWorkTree: false
     }

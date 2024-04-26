@@ -24,8 +24,7 @@ export interface IGitEntry {
     sha: string;
     name: string; 
     stage: Stage;
-    assumeValid: boolean;
-    extended: number;
+    assumeValid: number;
     indentToAdd: boolean; 
     skipWorkTree: boolean;
 }
