@@ -1,1 +1,33 @@
-// git index
+import { IGitIndex, IGitHeader, IGitEntry } from "../types/types";
+import fs from 'fs/promises';
+import { encodeEntry } from "../utils/encodeEntry";
+
+export class GitIndex implements IGitIndex {
+    header;
+    entries;
+
+    constructor(header: IGitHeader, entries: IGitEntry[] = []) {
+        this.header = header;
+        this.entries = entries;
+    }
+
+    add(entry: IGitEntry) {
+        this.entries.push(entry);
+    }
+
+    async write() {
+        const header = Buffer.alloc(12);
+        header.set(Buffer.from(this.header.signature), 0);
+        header.writeInt32BE(this.header.version, 4);
+        header.writeInt32BE(this.entries.length, 8); 
+        
+        const encodedEntries: Buffer[] = [];
+        this.entries.forEach(entry => {
+            encodedEntries.push(encodeEntry(entry));
+        });
+
+        const indexContent = Buffer.concat([header, ...encodedEntries])
+
+        await fs.writeFile('.git/index', indexContent, 'hex');
+    }
+}
