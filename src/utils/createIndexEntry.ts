@@ -1,27 +1,19 @@
 import * as fsPromises from 'fs/promises';
-import fs from 'fs';
-import path from 'path'; 
+import path from 'path';
 import { FileMode, Stage, UnixPermissions } from '../enums/enums';
 import { hashContent } from './hashContents';
 import { IGitEntry } from '../types/types';
 
 export async function createIndexEntry(file: string, gitRoot: string): Promise<IGitEntry> { 
-    let stat: fs.Stats;
-    const filePath = path.relative(gitRoot, file);
-    
-    try {
-        await fsPromises.access(filePath);
-        stat = await fsPromises.lstat(filePath);
-    } catch {
-        throw Error(`fatal: Cannot open '${file}': No such file or directory.`);
-    }
+    const relativeFilePath = path.relative(gitRoot, file);
+    const stat = await fsPromises.lstat(relativeFilePath);
 
     const ctimeSec = Math.floor(stat.ctimeMs / 1000);
-    const ctimeNano = Math.floor((stat.ctimeMs - ctimeSec * 1000) * 1000_000);
+    const ctimeNano = Math.floor((stat.ctimeMs - ctimeSec * 1000) * 1000000);
     const mtimeSec = Math.floor(stat.mtimeMs / 1000);
-    const mtimeNano = Math.floor((stat.mtimeMs - mtimeSec * 1000) * 1000_000);
+    const mtimeNano = Math.floor((stat.mtimeMs - mtimeSec * 1000) * 1000000);
 
-    const content = await fsPromises.readFile(filePath);
+    const content = await fsPromises.readFile(file);
     const sha = await hashContent(gitRoot, 'blob', true, content);
 
     return {
@@ -37,7 +29,7 @@ export async function createIndexEntry(file: string, gitRoot: string): Promise<I
         gid: stat.gid, 
         fileSize: stat.size,
         sha: sha, 
-        name: filePath, 
+        name: file, 
         stage: Stage.ZERO,
         assumeValid: 1,
         indentToAdd: false,

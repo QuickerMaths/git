@@ -11,8 +11,7 @@ export function encodeEntry(entry: IGitEntry): Buffer {
     prefix.writeUInt32BE(entry.mtimeNano, MTIME_NANO_OFFSET);
 
     prefix.writeUInt32BE(entry.dev, DEV_OFFSET);
-
-    prefix.writeUInt32BE(entry.ino, INO_OFFSET);
+    prefix.writeUInt32BE((entry.ino << 32), INO_OFFSET);
 
     prefix.writeUInt32BE(entry.modeType, MODE_OFFSET);
 
