@@ -3,6 +3,7 @@ import { hideBin } from 'yargs/helpers';
 import { hashObject } from './commands/hash-object';
 import { init } from './commands/init';
 import { ensureGitRepo } from './utils/ensureGitRepo';
+import { updateIndex } from './commands/update-index';
 
 async function commandWrapper(callback: () => Promise<string | string[] | undefined | void>) {
     try {
@@ -74,4 +75,24 @@ export function cli(args: string[]) {
                 await commandWrapper(() => hashObject(gitRoot, argv.files, argv.type, argv.write, !!argv.stdin))
             }
     )
+    .command(
+        'update-index [files..]',
+        'register files in the working directory to the index files',
+        (argv) => {
+            return argv
+            .positional('files', {
+                describe: 'files to update index with',
+                default: []
+            })
+            .option('add', {
+                type: 'boolean',
+                description: "If specified it checks if file isn't in the index and then adds. If file is in the index already it igrnoes it",
+                default: false,
+            })
+        },
+            async (argv) => {
+            const gitRoot = await ensureGitRepo();
+            await updateIndex(gitRoot, argv.files, argv.add);
+        }
+    );
 }
