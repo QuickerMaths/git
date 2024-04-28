@@ -1,4 +1,4 @@
-import { FileMode, UnixPermissions, Stage } from "../enums/enums";
+import { FileMode, Stage } from "../enums/enums";
 
 export const GitObjects = ['blob', 'tree', 'commit', 'tag'];
 
@@ -17,7 +17,6 @@ export interface IGitEntry {
     dev: number;
     ino: number;
     modeType: FileMode;
-    modePerms: UnixPermissions;
     uid: number;
     gid: number; 
     fileSize: number;
@@ -25,6 +24,7 @@ export interface IGitEntry {
     name: string; 
     stage: Stage;
     assumeValid: number;
+    extended: number;
     indentToAdd: boolean; 
     skipWorkTree: boolean;
 }

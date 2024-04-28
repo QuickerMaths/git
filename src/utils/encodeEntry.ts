@@ -26,7 +26,7 @@ export function encodeEntry(entry: IGitEntry): Buffer {
     const nameLength = entry.name.length < 0xfff ? entry.name.length : 0xfff;
     prefix.writeUInt16BE(entry.assumeValid | entry.stage | nameLength , FLAGS_OFFSET);
 
-    const pathName = Buffer.from(entry.name, 'ascii'); // variable
+    const pathName = Buffer.from(entry.name, 'ascii');
 
     const paddingSize = 8 - ((PREFIX_SIZE + pathName.byteLength) % 8);
 

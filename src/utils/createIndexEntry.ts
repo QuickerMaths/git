@@ -1,6 +1,6 @@
 import * as fsPromises from 'fs/promises';
 import path from 'path';
-import { FileMode, Stage, UnixPermissions } from '../enums/enums';
+import { FileMode, Stage } from '../enums/enums';
 import { hashContent } from './hashContents';
 import { IGitEntry } from '../types/types';
 
@@ -24,7 +24,6 @@ export async function createIndexEntry(file: string, gitRoot: string): Promise<I
         dev: stat.dev,
         ino: stat.ino,
         modeType: FileMode.REGULAR,
-        modePerms: UnixPermissions.ABSOLUTE,
         uid: stat.uid,
         gid: stat.gid, 
         fileSize: stat.size,
@@ -32,6 +31,7 @@ export async function createIndexEntry(file: string, gitRoot: string): Promise<I
         name: file, 
         stage: Stage.ZERO,
         assumeValid: 1,
+        extended: 0,
         indentToAdd: false,
         skipWorkTree: false
     }
