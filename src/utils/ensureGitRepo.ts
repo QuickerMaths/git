@@ -1,14 +1,5 @@
 import path from "path";
-import fs from 'fs/promises';
-
-async function exists(path: string) {
-    try {
-        await fs.access(path)
-        return true
-    } catch {
-        return false
-    }
-}
+import { exists } from "./exists";
 
 export async function ensureGitRepo(): Promise<string> {
   let root = process.cwd();
