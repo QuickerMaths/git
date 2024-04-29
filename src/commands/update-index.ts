@@ -30,12 +30,10 @@ export async function updateIndex(gitRoot: string, files: string [], add: boolea
 
     if(await exists(pathToIndex)) {
         index = await parseIndex(pathToIndex);
+        index.add(entries);
     } else {
         index = new GitIndex({ signature: 'DIRC', version: 2 }, entries)
     }
-    
-    if(add && !!files.length) {
-        index.add(entries);
-        await index.write();
-    }
+
+    if(add && !!files.length) await index.write(); 
 }
