@@ -12,8 +12,8 @@ export class GitIndex implements IGitIndex {
         this.entries = entries;
     }
 
-    add(entry: IGitEntry) {
-        this.entries.push(entry);
+    add(entries: IGitEntry[]) {
+        entries.forEach(entry => this.entries.push(entry));
     }
 
     async write() {
@@ -22,7 +22,7 @@ export class GitIndex implements IGitIndex {
         header.writeInt32BE(this.header.version, 4);
         header.writeInt32BE(this.entries.length, 8); 
         
-        const encodedEntries: Buffer[] = [];
+        const encodedEntries: Buffer[] = []; 
         this.entries.forEach(entry => {
             encodedEntries.push(encodeEntry(entry));
         });
