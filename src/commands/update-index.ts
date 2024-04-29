@@ -25,15 +25,17 @@ export async function updateIndex(gitRoot: string, files: string [], add: boolea
             throw Error(`fatal: Cannot open '${file}': No such file or directory.`);
         }
     }
-
+    
     let index: GitIndex;
 
     if(await exists(pathToIndex)) {
         index = await parseIndex(pathToIndex);
-        console.log(index);
     } else {
         index = new GitIndex({ signature: 'DIRC', version: 2 }, entries)
     }
     
-    if(add && !!files.length) await index.write();
+    if(add && !!files.length) {
+        index.add(entries);
+        await index.write();
+    }
 }
