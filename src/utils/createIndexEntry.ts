@@ -28,10 +28,9 @@ export async function createIndexEntry(file: string, gitRoot: string): Promise<I
         gid: stat.gid, 
         fileSize: stat.size,
         sha: sha, 
-        name: file, 
+        name: relativeFilePath, 
         stage: Stage.ZERO,
-        assumeValid: 1,
-        extended: 0,
+        assumeValid: 0,
         indentToAdd: false,
         skipWorkTree: false
     }

@@ -24,7 +24,7 @@ export function encodeEntry(entry: IGitEntry): Buffer {
     prefix.set(Buffer.from(entry.sha, 'hex'), SHA_OFFSET);
 
     const nameLength = entry.name.length < 0xfff ? entry.name.length : 0xfff;
-    prefix.writeUInt16BE(entry.assumeValid | entry.stage | nameLength , FLAGS_OFFSET);
+    prefix.writeUInt16BE((entry.assumeValid << 12) | (entry.stage << 12) | nameLength , FLAGS_OFFSET);
 
     const pathName = Buffer.from(entry.name, 'ascii');
 
