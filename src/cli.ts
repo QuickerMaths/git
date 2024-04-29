@@ -4,6 +4,7 @@ import { hashObject } from './commands/hash-object';
 import { init } from './commands/init';
 import { ensureGitRepo } from './utils/ensureGitRepo';
 import { updateIndex } from './commands/update-index';
+import { gitStatus } from './commands/status';
 
 async function commandWrapper(callback: () => Promise<string | string[] | undefined | void>) {
     try {
@@ -92,7 +93,17 @@ export function cli(args: string[]) {
         },
             async (argv) => {
             const gitRoot = await ensureGitRepo();
-            await updateIndex(gitRoot, argv.files, argv.add);
+            await commandWrapper(() => updateIndex(gitRoot, argv.files, argv.add)); 
+        }
+    )
+    .command(
+        'status',
+        'displays paths that differences between the index file and curretn HEAD commit, path that diffirenced between the working tree and and index file, and the paths that are not being tracked by CCGit',
+        (argv) => {},
+            async (argv) => {
+            const gitRoot = await ensureGitRepo();
+            await commandWrapper(() => gitStatus(gitRoot)); 
         }
     );
 }
+
