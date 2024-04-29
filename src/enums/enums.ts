@@ -28,9 +28,3 @@ export enum FileStatusCode {
   ADDED = 'A',
   UNMODIFIED = ' '
 }
-
-export enum UnixPermissions {
-    ABSOLUTE = 0o0755, 
-    ROOT = 0o0644,
-    SYMLINKS_AND_GITLINKS = 0
-}
