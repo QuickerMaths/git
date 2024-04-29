@@ -1,26 +1,29 @@
 import path from "path";
 import fs from 'fs/promises';
 import { exists } from '../utils/exists';
+import { GitIndex } from '../objects/git-index'; 
+import { parseIndex } from '../utils/parseIndex';
+import { FileStatusCode } from "../enums/enums";
+import { Stats } from "fs";
 
-
-async function processUntrackedFile(file: string, workingTreeFiles: string[]): Promise<string[]> {
+async function processUntrackedFile(file: string, workingTreeFilesStats: Map<string, Stats>) {
     try {
         const directoryFiles = await fs.readdir(file, { recursive: true });
-        return workingTreeFiles.concat(directoryFiles);
+        await Promise.all(directoryFiles.map(async directoryFile => {
+            workingTreeFilesStats.set(directoryFile, await fs.lstat(directoryFile));
+        }));
     } catch(err: any) {
         if(err.code === 'ENOTDIR') {
-            workingTreeFiles.push(file);
-            return workingTreeFiles;
+            workingTreeFilesStats.set(file, await fs.lstat(file));
+            return;
         }
         throw Error(err);
     }
 }
 
-async function readWorkingTree(gitRoot: string, files: string[], untrackedFiles: boolean) {
-    let workingTreeFiles: string[] = [];
+async function readWorkingTree(gitRoot: string, files: string[], untrackedFiles: boolean, workingTreeFilesStats: Map<string, Stats>) {
     let startFormGitRoot = true;
-
-    // if files are provided but one of them is '.' that refers to git root, we skip other arugments and read from git root 
+    // if files are provided but one of them is '.' that refers to git root, we skip other files and read from git root 
     if(!!files.length) {
         const dotPath = files.find(file => file === '.');
         if(!dotPath || path.resolve(dotPath) !== gitRoot) startFormGitRoot = false;
@@ -35,44 +38,55 @@ async function readWorkingTree(gitRoot: string, files: string[], untrackedFiles:
             const filePath = path.relative(gitRoot, file.name);
 
             if(untrackedFiles) {
-                workingTreeFiles = await processUntrackedFile(filePath, workingTreeFiles);
+               processUntrackedFile(filePath, workingTreeFilesStats);
             } else {
-                workingTreeFiles.push(filePath);
+                workingTreeFilesStats.set(filePath, await fs.lstat(filePath));
             }
         }
 
-        return workingTreeFiles; 
+        return workingTreeFilesStats; 
     }
 
     await Promise.all(files.map(async file => {
         if(await exists(file)){
             if(untrackedFiles) {
-                workingTreeFiles = await processUntrackedFile(file, workingTreeFiles);
+                await processUntrackedFile(file, workingTreeFilesStats);
             } else {
-                workingTreeFiles.push(file);
+                workingTreeFilesStats.set(file, await fs.lstat(file));
             }
         }
     }));
 
-    return workingTreeFiles;
+    return workingTreeFilesStats;
+}
+
+async function workTreeIndexDiff(workingTreeFiles: Map<string, Stats>, index: GitIndex, statusFiles: Map<string, FileStatusCode>) {
+
+}
+
+function sendOutput(currentBranch: string, statusFiles: Map<string, FileStatusCode>) {
+    return `On branch ${currentBranch}`;
 }
 
 export async function gitStatus(gitRoot: string, paths: string[], untrackedFiles: boolean) {
-    let indexFile: Buffer;
-    let workingTreeFiles: string[];
+    let index: GitIndex;
+    const workingTreeFilesStats = new Map<string, Stats>;
+    const statusFiles = new Map<string, FileStatusCode>;
 
     const pathToHead = path.join(gitRoot, '.git/HEAD');
     const pathToIndex = path.join(gitRoot, '.git/index');
     const headFile = await fs.readFile(pathToHead, 'utf-8');
     const currentBranch = path.basename(headFile);
 
-    workingTreeFiles = await readWorkingTree(gitRoot, paths, untrackedFiles);
-    console.log(workingTreeFiles); 
+    await readWorkingTree(gitRoot, paths, untrackedFiles, workingTreeFilesStats);
 
     try {
         await fs.access(pathToIndex);
-        indexFile = await fs.readFile(pathToIndex);
+        index = await parseIndex(pathToIndex);
+        await workTreeIndexDiff(workingTreeFilesStats, index, statusFiles);
+        return sendOutput(currentBranch, statusFiles);
     } catch { 
-        return `On branch ${currentBranch}\r\nno changes commited yet`; 
+        workingTreeFilesStats.forEach((_value, key) => statusFiles.set(key, FileStatusCode.UNTRACKED));
+        return sendOutput(currentBranch, statusFiles);
     }
 }
