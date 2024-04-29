@@ -18,38 +18,43 @@ async function processUntrackedFile(file: string, workingTreeFiles: string[]): P
 
 async function readWorkingTree(gitRoot: string, files: string[], untrackedFiles: boolean) {
     let workingTreeFiles: string[] = [];
+    let startFormGitRoot = true;
 
-    // if files are present, only read from files
+    // if files are provided but one of them is '.' that refers to git root, we skip other arugments and read from git root 
     if(!!files.length) {
-        await Promise.all(files.map(async file => {
-            if(await exists(file)){
-                if(untrackedFiles) {
-                    workingTreeFiles = await processUntrackedFile(file, workingTreeFiles);
-                } else {
-                    workingTreeFiles.push(file);
-                }
-            }
-        }));
-
-        return workingTreeFiles;
+        const dotPath = files.find(file => file === '.');
+        if(!dotPath || path.resolve(dotPath) !== gitRoot) startFormGitRoot = false;
     }
     
-    // if no files are porvided read form git root dir excluding .DS_Store file and .git dir
-    const rootDir = await fs.opendir(gitRoot);
+    if(startFormGitRoot) {
+        const rootDir = await fs.opendir(gitRoot);
 
-    for await (const file of rootDir) {
-        if(file.name === '.DS_Store' || file.name === '.git') continue;
-        
-        const filePath = path.relative(gitRoot, file.name);
-        
-        if(untrackedFiles) {
-            workingTreeFiles = await processUntrackedFile(filePath, workingTreeFiles);
-        } else {
-            workingTreeFiles.push(filePath);
+        for await (const file of rootDir) {
+            if(file.name === '.DS_Store' || file.name === '.git') continue;
+
+            const filePath = path.relative(gitRoot, file.name);
+
+            if(untrackedFiles) {
+                workingTreeFiles = await processUntrackedFile(filePath, workingTreeFiles);
+            } else {
+                workingTreeFiles.push(filePath);
+            }
         }
+
+        return workingTreeFiles; 
     }
 
-    return workingTreeFiles; 
+    await Promise.all(files.map(async file => {
+        if(await exists(file)){
+            if(untrackedFiles) {
+                workingTreeFiles = await processUntrackedFile(file, workingTreeFiles);
+            } else {
+                workingTreeFiles.push(file);
+            }
+        }
+    }));
+
+    return workingTreeFiles;
 }
 
 export async function gitStatus(gitRoot: string, paths: string[], untrackedFiles: boolean) {
