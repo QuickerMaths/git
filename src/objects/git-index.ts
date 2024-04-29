@@ -1,6 +1,7 @@
 import { IGitIndex, IGitHeader, IGitEntry } from "../types/types";
 import fs from 'fs/promises';
 import { encodeEntry } from "../utils/encodeEntry";
+import { createHash } from "crypto";
 
 export class GitIndex implements IGitIndex {
     header;
@@ -28,6 +29,11 @@ export class GitIndex implements IGitIndex {
 
         const indexContent = Buffer.concat([header, ...encodedEntries])
 
-        await fs.writeFile('.git/index', indexContent, 'hex');
+        const checksum = Buffer.from(
+            createHash('sha1').update(indexContent).digest('hex'),
+            'hex'
+        );
+
+        await fs.writeFile('.git/index', Buffer.concat([indexContent, checksum]), 'hex');
     }
 }
