@@ -97,12 +97,24 @@ export function cli(args: string[]) {
         }
     )
     .command(
-        'status',
+        'status [paths..]',
         'displays paths that differences between the index file and curretn HEAD commit, path that diffirenced between the working tree and and index file, and the paths that are not being tracked by CCGit',
-        (argv) => {},
+        (argv) => {
+            return argv
+            .positional('paths', {
+               describe: 'file paths that status commands will display. If not specified it default to git root directory',
+               default: []
+            })
+            .option('untracked-files', {
+                alias: 'u', 
+                description: 'show individual file in untracked directories',
+                default: false,
+                type: 'boolean'
+            })
+        },
             async (argv) => {
             const gitRoot = await ensureGitRepo();
-            await commandWrapper(() => gitStatus(gitRoot)); 
+            await commandWrapper(() => gitStatus(gitRoot, argv.paths, argv.untrackedFiles)); 
         }
     );
 }
