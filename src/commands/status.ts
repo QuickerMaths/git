@@ -5,6 +5,7 @@ import { GitIndex } from '../objects/git-index';
 import { parseIndex } from '../utils/parseIndex';
 import { FileStatusCode } from "../enums/enums";
 import { Stats } from "fs";
+import { hashObject } from "./hash-object";
 
 async function processUntrackedFile(file: string, workingTreeFilesStats: Map<string, Stats>) {
     try {
@@ -60,11 +61,27 @@ async function readWorkingTree(gitRoot: string, files: string[], untrackedFiles:
     return workingTreeFilesStats;
 }
 
-async function workTreeIndexDiff(workingTreeFiles: Map<string, Stats>, index: GitIndex, statusFiles: Map<string, FileStatusCode>) {
+async function workTreeIndexDiff(gitRoot:string, workingTreeFilesStats: Map<string, Stats>, index: GitIndex, statusFiles: Map<string, FileStatusCode>) {
+    await Promise.all(index.entries.map(async entry => {
+       if(workingTreeFilesStats.has(entry.name)) {
+           const workingTreeFileHash = await hashObject(gitRoot, [entry.name], 'blob', false, false)
+            if(workingTreeFileHash[0] === entry.sha) {
+                statusFiles.set(entry.name, FileStatusCode.UNMODIFIED);
+            } else {
+                statusFiles.set(entry.name, FileStatusCode.MODIFIED);
+            }
+       } else {
+           statusFiles.set(entry.name, FileStatusCode.DELETED);
+       }
 
+       workingTreeFilesStats.delete(entry.name);
+    }));
+
+    workingTreeFilesStats.forEach((_value, key) => statusFiles.set(key, FileStatusCode.UNTRACKED));
 }
 
 function sendOutput(currentBranch: string, statusFiles: Map<string, FileStatusCode>) {
+    console.log(statusFiles);
     return `On branch ${currentBranch}`;
 }
 
@@ -83,7 +100,7 @@ export async function gitStatus(gitRoot: string, paths: string[], untrackedFiles
     try {
         await fs.access(pathToIndex);
         index = await parseIndex(pathToIndex);
-        await workTreeIndexDiff(workingTreeFilesStats, index, statusFiles);
+        await workTreeIndexDiff(gitRoot, workingTreeFilesStats, index, statusFiles);
         return sendOutput(currentBranch, statusFiles);
     } catch { 
         workingTreeFilesStats.forEach((_value, key) => statusFiles.set(key, FileStatusCode.UNTRACKED));
