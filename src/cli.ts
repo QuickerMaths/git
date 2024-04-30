@@ -5,6 +5,7 @@ import { init } from './commands/init';
 import { ensureGitRepo } from './utils/ensureGitRepo';
 import { updateIndex } from './commands/update-index';
 import { gitStatus } from './commands/status';
+import { catFile } from './commands/cat-file';
 
 async function commandWrapper(callback: () => Promise<string | string[] | undefined | void>) {
     try {
@@ -116,6 +117,39 @@ export function cli(args: string[]) {
             const gitRoot = await ensureGitRepo();
             await commandWrapper(() => gitStatus(gitRoot, argv.paths, argv.untrackedFiles)); 
         }
-    );
+    )
+    .command(
+        'cat-file [object]', 
+        'provides the content or the type of the object in the repository',
+        (argv) => {
+            return argv
+            .positional('object', {
+                describe: 'the sha1 hash of the object to show',
+                type: 'string',
+            })
+            .option('type', {
+                alias: 't',
+                description: 'insead of content, show the object type identified by [object]',
+                type: 'boolean', 
+                default: false,
+            })
+            .option('size', {
+                alias: 's',
+                description: 'instead od the content, show the object size identified by [object]',
+                type: 'boolean', 
+                default: false
+            })
+            .option('pretty-print', {
+                alias: 'p',
+                description: 'preety-print contents of the [object], based on its type',
+                type: 'boolean', 
+                default: false
+            }),
+            async (argv) => {
+                const gitRoot = await ensureGitRepo();
+                await commandWrapper(() => await catFile(gitRoot, argv.object, argv.type, argv.size, argv.prettyPrint));
+            }
+        },
+    )
 }
 
