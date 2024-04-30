@@ -12,3 +12,7 @@ export const FILES_SIZE_OFFSET = 36;
 export const SHA_OFFSET = 40;
 export const FLAGS_OFFSET = 60;
 export const NAME_OFFSET = 62;
+
+export const FgGreen = '\x1b[32m';
+export const ColorReset = '\x1b[0m';
+export const FgRed = '\x1b[31m';
