@@ -6,6 +6,7 @@ import { ensureGitRepo } from './utils/ensureGitRepo';
 import { updateIndex } from './commands/update-index';
 import { gitStatus } from './commands/status';
 import { catFile } from './commands/cat-file';
+import { writeTree } from './commands/write-tree';
 
 async function commandWrapper(callback: () => Promise<string | string[] | Buffer | undefined | void>) {
     try {
@@ -155,6 +156,14 @@ export function cli(args: string[]) {
         async (argv) => {
             const gitRoot = await ensureGitRepo();
             await commandWrapper(() => catFile(gitRoot, argv.type, argv.object, argv.returnType, argv.size, argv.prettyPrint));
+        }
+    )
+    .command(
+        'write-tree',
+        'create a tree object from current index',
+        async (_argv) => {
+            const gitRoot = await ensureGitRepo();
+            await commandWrapper(() => writeTree(gitRoot));
         }
     )
 }
