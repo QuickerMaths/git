@@ -7,7 +7,7 @@ import { updateIndex } from './commands/update-index';
 import { gitStatus } from './commands/status';
 import { catFile } from './commands/cat-file';
 
-async function commandWrapper(callback: () => Promise<string | string[] | undefined | void>) {
+async function commandWrapper(callback: () => Promise<string | string[] | Buffer | undefined | void>) {
     try {
         const output = await callback();
         if(output) {
@@ -89,10 +89,10 @@ export function cli(args: string[]) {
             .option('add', {
                 type: 'boolean',
                 description: "If specified it checks if file isn't in the index and then adds. If file is in the index already it igrnoes it",
-                default: false,
+                    default: false,
             })
         },
-            async (argv) => {
+        async (argv) => {
             const gitRoot = await ensureGitRepo();
             await commandWrapper(() => updateIndex(gitRoot, argv.files, argv.add)); 
         }
@@ -103,8 +103,8 @@ export function cli(args: string[]) {
         (argv) => {
             return argv
             .positional('paths', {
-               describe: 'file paths that status commands will display. If not specified it default to git root directory',
-               default: []
+                describe: 'file paths that status commands will display. If not specified it default to git root directory',
+                default: []
             })
             .option('untracked-files', {
                 alias: 'u', 
@@ -113,43 +113,49 @@ export function cli(args: string[]) {
                 type: 'boolean'
             })
         },
-            async (argv) => {
+        async (argv) => {
             const gitRoot = await ensureGitRepo();
             await commandWrapper(() => gitStatus(gitRoot, argv.paths, argv.untrackedFiles)); 
         }
     )
     .command(
-        'cat-file [object]', 
+        'cat-file [type] <object>', 
         'provides the content or the type of the object in the repository',
         (argv) => {
             return argv
             .positional('object', {
                 describe: 'the sha1 hash of the object to show',
                 type: 'string',
+                default: '',
             })
-            .option('type', {
+            .positional('type', {
+                describe: 'defines type of given <object>',
+                choices: ['blob', 'tree', 'commit', ''] as const, 
+                default: ''
+            })
+            .option('return-type', {
                 alias: 't',
-                description: 'insead of content, show the object type identified by [object]',
+                description: 'insead of content, show the object type identified by <object>',
                 type: 'boolean', 
                 default: false,
             })
             .option('size', {
                 alias: 's',
-                description: 'instead od the content, show the object size identified by [object]',
+                description: 'instead od the content, show the object size identified by <object>',
                 type: 'boolean', 
                 default: false
             })
             .option('pretty-print', {
                 alias: 'p',
-                description: 'preety-print contents of the [object], based on its type',
+                description: 'preety-print contents of the <object>, based on its type',
                 type: 'boolean', 
                 default: false
-            }),
-            async (argv) => {
-                const gitRoot = await ensureGitRepo();
-                await commandWrapper(() => await catFile(gitRoot, argv.object, argv.type, argv.size, argv.prettyPrint));
-            }
+            })
         },
+        async (argv) => {
+            const gitRoot = await ensureGitRepo();
+            await commandWrapper(() => catFile(gitRoot, argv.type, argv.object, argv.returnType, argv.size, argv.prettyPrint));
+        }
     )
 }
 
