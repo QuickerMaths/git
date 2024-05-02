@@ -34,6 +34,11 @@ function parseObject(fileContent: Buffer) {
 }
 
 export async function catFile(gitRoot: string, argvType: string, argvObject: string, returnType: boolean, returnSize: boolean, prettyPrint: boolean) {
+    // only one argument can be specified at a time
+    let argvCount = [argvType, returnType, returnSize, prettyPrint].filter(Boolean).length;
+    if (argvCount !== 1) throw Error('fatal: Invalid usage, only one argument can be specified at a time');
+    if(!argvType && !returnType && !returnSize && !prettyPrint) throw Error('fatal: Invalid usage, provide one of [type] | -p | -s | -t');
+
     const objectDir = argvObject.slice(0, 2);
     const pathToObjectDir = path.resolve(gitRoot, '.git/objects', objectDir);
     const objectName = argvObject.substring(2, argvObject.length);
@@ -46,13 +51,7 @@ export async function catFile(gitRoot: string, argvType: string, argvObject: str
 
     const { type, size, content } = parseObject(inflatedContent);
 
-    // only one argument can be specified at a time
-    let argvCount = [argvType, returnType, returnSize, prettyPrint].filter(Boolean).length;
-    if (argvCount !== 1) throw Error('fatal: Invalid usage, only one argument can be specified at a time');
-    if(!argvType && !returnType && !returnSize && !prettyPrint) throw Error('fatal: Invalid usage, provide one of [type] | -p | -s | -t');
     if(!!argvType.length && argvType !== type.toString()) throw Error(`fatal: Invalid type ${argvType}`);
-
-
     if(!!argvType.length && argvType === type.toString()) return content;
     if(prettyPrint) return content;
     if(returnSize) return size;
