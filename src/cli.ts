@@ -161,10 +161,18 @@ export function cli(args: string[]) {
     .command(
         'write-tree',
         'create a tree object from current index',
-        async (_argv) => {
+        (argv) => {
+            return argv
+            .option('write', {
+                alias: 'w',
+                type: 'boolean',
+                description: 'actually write the object into the database',
+                default: true
+            })
+        },
+        async (argv) => {
             const gitRoot = await ensureGitRepo();
-            await commandWrapper(() => writeTree(gitRoot));
+            await commandWrapper(() => writeTree(gitRoot, argv.write));
         }
     )
 }
-
