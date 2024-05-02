@@ -1,4 +1,5 @@
 import { FileMode, Stage } from "../enums/enums";
+import { TreeObject } from "../objects/tree";
 
 export const GitObjects = ['blob', 'tree', 'commit', 'tag'];
 
@@ -31,5 +32,18 @@ export interface IGitEntry {
 export interface IGitIndex { 
     header: IGitHeader;
     entries: IGitEntry[];
+}
+
+export interface IGitTreeObject { 
+    mode: FileMode; 
+    path: string;
+    name: string;
+    hash?: string;
+    children: Map<string, IGitTreeObject>;
+}
+
+export interface IGitTree {
+    treeRoot: TreeObject;
+    treeObjects: Map<string, IGitTreeObject>;
 }
 
