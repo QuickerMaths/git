@@ -1,7 +1,7 @@
 import fs from 'fs';
 import zlib from 'zlib';
 import path from 'path';
-import { EntryType, FileMode } from '../enums/enums';
+import { FileMode } from '../enums/enums';
 import { IGitTreeObject, IGitTree, IGitEntry } from '../types/types';
 import { createHash } from 'crypto';
 
@@ -14,12 +14,14 @@ export class Tree implements IGitTree {
         this.treeObjects = new Map<string, IGitTreeObject>;
     }
 
-    createTree(entries: IGitEntry[]) {
-        const treeObjects = entries.map(entry => {
+    buildTreeObjects(entries: IGitEntry[]) {
+        return entries.map(entry => {
             const name = path.basename(entry.name);
             return new TreeObject(FileMode.REGULAR, entry.name, name, entry.sha);
         })
+    }
 
+    createTree(treeObjects: TreeObject[]) {
         treeObjects.forEach(object => {
             let tempRoot = this.treeRoot;
             let currentPath = '';
@@ -37,7 +39,7 @@ export class Tree implements IGitTree {
                    return;
                 }
 
-                if(!this.treeObjects.get(currentPath)) {
+                if(!tempRoot.children.get(currentPath)) {
                     const treeObject = new TreeObject(FileMode.DIR, currentPath, paths[i]);
                     tempRoot.children.set(paths[i], treeObject);
                 }

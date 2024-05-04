@@ -15,7 +15,8 @@ export async function writeTree(gitRoot: string, write: boolean = true) {
     }
     
     const tree = new Tree();
-    tree.createTree(index.entries);
+    const treeObjects = tree.buildTreeObjects(index.entries);
+    tree.createTree(treeObjects);
 
     const treeHash = tree.treeRoot.hashTree(gitRoot, write);
 
