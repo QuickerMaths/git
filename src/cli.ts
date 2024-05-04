@@ -7,6 +7,7 @@ import { updateIndex } from './commands/update-index';
 import { gitStatus } from './commands/status';
 import { catFile } from './commands/cat-file';
 import { writeTree } from './commands/write-tree';
+import { lsTree } from './commands/ls-tree';
 
 async function commandWrapper(callback: () => Promise<string | string[] | Buffer | undefined | void>) {
     try {
@@ -173,6 +174,34 @@ export function cli(args: string[]) {
         async (argv) => {
             const gitRoot = await ensureGitRepo();
             await commandWrapper(() => writeTree(gitRoot, argv.write));
+        }
+    )
+    .command(
+        'ls-tree <hash>',
+        'lists the contents of given tree object',
+        (argv) => {
+            return argv
+            .positional('hash', {
+                describe: 'hash of a tree',
+                type: 'string',
+                default: ''
+            })
+            .option('recursive', {
+                description: 'recursive into sub-trees',
+                alias: 'r',
+                type: 'boolean',
+                defualt: false
+            })
+            .option('show-tree', {
+                description: 'show tree entries even when goinf to recurse them. Has no effect when -r is not used',
+                alias: 't',
+                type: 'boolean',
+                default: false
+            })
+        },
+        async (argv) => {
+            const gitRoot = await ensureGitRepo();
+            lsTree(gitRoot, argv.hash, argv.recursive, argv.showTree);
         }
     )
 }
