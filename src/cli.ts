@@ -190,7 +190,7 @@ export function cli(args: string[]) {
                 description: 'recursive into sub-trees',
                 alias: 'r',
                 type: 'boolean',
-                defualt: false
+                default: false
             })
             .option('show-tree', {
                 description: 'show tree entries even when goinf to recurse them. Has no effect when -r is not used',
@@ -201,7 +201,7 @@ export function cli(args: string[]) {
         },
         async (argv) => {
             const gitRoot = await ensureGitRepo();
-            lsTree(gitRoot, argv.hash, argv.recursive, argv.showTree);
+            await commandWrapper(() => lsTree(gitRoot, argv.hash, argv.recursive, argv.showTree)); 
         }
     )
 }
