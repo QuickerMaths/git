@@ -13,11 +13,10 @@ export function prepareTreeOutput(tree: Tree) {
     return treeOutput;
 }
 
-export async function processTree(gitRoot: string, tree: Tree , treeArray: any[], recursive: boolean) {
+export async function processTree(gitRoot: string, tree: Tree , treeArray: TreeObject[], recursive: boolean) {
     const treeObject = treeArray.shift();
     const { content } = await parseObject(gitRoot, treeObject?.hash!);
 
-    
     for(let i = 1; i < content.length;) {
         let modeStart = i;
         while(content[i] !== Buffer.from(' ')[0]) {
@@ -33,7 +32,7 @@ export async function processTree(gitRoot: string, tree: Tree , treeArray: any[]
         }
 
         const name = content.subarray(nameStart, i).toString();
-        const objectPath = path.join(treeObject.path, name);
+        const objectPath = path.join(treeObject?.path!, name);
         i++;
 
         const hash = content.subarray(i, i + 20).toString('hex')
