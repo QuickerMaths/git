@@ -1,37 +1,7 @@
-import fs from 'fs/promises';
-import path from 'path';
-import zlib from 'zlib';
-import { exists } from '../utils/exists';
-
-function parseHeader(header: Buffer) {
-    let i = 0;
-    while(i < header.length && header[i] !== Buffer.from(' ')[0]) {
-        i++
-    }
-
-    return {
-        type: header.subarray(0, i),
-        // remove space
-        size: header.subarray(i + 1, header.length)
-    }
-}
-
-function parseObject(fileContent: Buffer) {
-    let i = 0;
-    while (i < fileContent.length && fileContent[i] !== Buffer.from('\0')[0]) {
-        i++
-    }
-    const header = fileContent.subarray(0, i);
-    const content = fileContent.subarray(i, fileContent.length);
-
-    const { type, size } = parseHeader(header);
-
-    return {
-        type,
-        size,
-        content
-    }
-}
+import { Tree, TreeObject } from '../objects/tree';
+import { FileMode } from '../enums/enums';
+import { parseObject } from '../utils/parseObject';
+import { processTree, prepareTreeOutput } from '../utils/processTree';
 
 export async function catFile(gitRoot: string, argvType: string, argvObject: string, returnType: boolean, returnSize: boolean, prettyPrint: boolean) {
     // only one argument can be specified at a time
@@ -39,21 +9,21 @@ export async function catFile(gitRoot: string, argvType: string, argvObject: str
     if (argvCount !== 1) throw Error('fatal: Invalid usage, only one argument can be specified at a time');
     if(!argvType && !returnType && !returnSize && !prettyPrint) throw Error('fatal: Invalid usage, provide one of [type] | -p | -s | -t');
 
-    const objectDir = argvObject.slice(0, 2);
-    const pathToObjectDir = path.resolve(gitRoot, '.git/objects', objectDir);
-    const objectName = argvObject.substring(2, argvObject.length);
-    const pathToObject = path.join(pathToObjectDir, objectName);
-
-    if(!await exists(pathToObject)) throw Error(`fatal: Invalid object ${argvObject}`)
-
-    const fileContent = await fs.readFile(pathToObject);
-    const inflatedContent = zlib.inflateSync(fileContent);
-
-    const { type, size, content } = parseObject(inflatedContent);
+    const { type, size, content } = await parseObject(gitRoot, argvObject);
 
     if(!!argvType.length && argvType !== type.toString()) throw Error(`fatal: Invalid type ${argvType}`);
-    if(!!argvType.length && argvType === type.toString()) return content;
-    if(prettyPrint) return content;
+    if(!!argvType.length && argvType === type.toString() || prettyPrint) {
+        if(argvType !== 'tree') return content;
+        // if type === 'tree'
+        const tree = new Tree(); 
+        const treeRoot = new TreeObject(FileMode.DIR, '' , '', argvObject);
+        tree.treeRoot = treeRoot; 
+
+        const treeArray = [treeRoot];
+        await processTree(gitRoot, tree, treeArray, false);
+
+        return prepareTreeOutput(tree);
+    }
     if(returnSize) return size;
     if(returnType) return type;
 }
