@@ -11,7 +11,7 @@ export class Tree implements IGitTree {
 
     constructor() {
         this.treeRoot = new TreeObject(FileMode.DIR, '', '');
-        this.treeObjects = new Map<string, IGitTreeObject>;
+        this.treeObjects = new Map<string, TreeObject>;
     }
 
     buildTreeObjects(entries: IGitEntry[]) {
@@ -31,7 +31,7 @@ export class Tree implements IGitTree {
                 currentPath = path.join(currentPath, paths[i]);
 
                 // last path is a file path
-                if(i === paths.length - 1) {
+                if(i === paths.length - 1 && object.mode !== FileMode.DIR) {
                    const treeObject = new TreeObject(FileMode.REGULAR, currentPath, paths[i], object.hash); 
                    tempRoot.children.set(paths[i], treeObject);
                    // set file object, to then be able to retirive it easly
@@ -40,7 +40,7 @@ export class Tree implements IGitTree {
                 }
 
                 if(!tempRoot.children.get(currentPath)) {
-                    const treeObject = new TreeObject(FileMode.DIR, currentPath, paths[i]);
+                    const treeObject = new TreeObject(FileMode.DIR, currentPath, paths[i], object.hash);
                     tempRoot.children.set(paths[i], treeObject);
                 }
 
@@ -55,6 +55,22 @@ export class Tree implements IGitTree {
 
     getTreeObject(pathToFile: string) {
         return this.treeObjects.get(pathToFile);
+    }
+
+    getRecursiveChildren() {
+        let tempRoot = this.treeRoot;
+        const objects: TreeObject[] = [];
+
+        const recursiveObjects = (object: TreeObject) => {
+            if(!!object.path) objects.push(object);
+            object.children.forEach(child => {
+                recursiveObjects(child);
+            });
+        };
+
+        recursiveObjects(tempRoot);
+
+        return objects;
     }
 }
 
@@ -113,8 +129,5 @@ export class TreeObject implements IGitTreeObject {
         }
         
         return hash;
-    }
-
-    encodeTree(content: Buffer) {
     }
 }
