@@ -3,10 +3,17 @@ import { FileMode } from '../enums/enums';
 import { TreeObject, Tree } from '../objects/tree';
 import { parseObject } from "./parseObject";
 
-export function prepareTreeOutput(tree: Tree) { 
-    const treeOutput = Array.from(tree.treeRoot.children.values()).map(child => {
-        const mode = child.mode.toString().startsWith('4') ? `0${child.mode}` : child.mode;
-        const type = child.mode === FileMode.REGULAR ? 'blob' : 'tree';
+export function prepareTreeOutput(tree: Tree, recursive?: boolean, showTree?: boolean) { 
+    let objectsToOutput = Array.from(tree.treeRoot.children.values());
+
+    if(recursive && showTree) objectsToOutput = tree.getRecursiveChildren();
+    if(recursive && !showTree) objectsToOutput = Array.from(tree.treeObjects.values());
+    if(showTree && !recursive) return;
+    
+    const treeOutput = objectsToOutput.map(child => {
+        const octalMode = child.mode.toString(8);
+        const mode = octalMode.startsWith('4') ? `0${octalMode}` : octalMode;
+        const type = Number(child.mode) === FileMode.REGULAR ? 'blob' : 'tree';
         return `${mode} ${type} ${child.hash}  ${child.path}`;
     }).join('\n');
 
