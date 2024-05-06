@@ -52,4 +52,5 @@ export interface GitCommit {
     author: string;
     committer: string;
     message: string;
+    parents: string[];
 }

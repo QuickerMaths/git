@@ -221,10 +221,15 @@ export function cli(args: string[]) {
                 type: 'string',
                 default: '',
             })
+            .option('parent', { 
+                alias: 'p',
+                description: 'parent commit hash',
+                type: 'string',
+            })
         },
         async (argv) => {
             const gitRoot = await ensureGitRepo();
-            await commandWrapper(() => commitTree(gitRoot, argv.tree, argv.message));
+            await commandWrapper(() => commitTree(gitRoot, argv.tree, argv.message, argv.parent));
         }
     )
 }

@@ -12,27 +12,31 @@ export class Commit implements GitCommit {
     author;
     committer;
     message;
+    parents: string[];
 
     constructor() {
         this.hash = '';
         this.author = '';
         this.committer = '';
         this.message = '';
+        this.parents = [];
     }
 
-    async createCommit(gitRoot: string, treeHash: string, message: string) {
+    async createCommit(gitRoot: string, treeHash: string, message: string, parent?: string) {
         const { type } = await parseObject(gitRoot, treeHash); 
         if(type.toString() !== 'tree') throw Error(`fatal: Invalid Object type ${type}`);
 
+        if(parent) this.setParents(parent);
         this.signCommit();
         await this.writeMessage(message);
 
-        let content = `tree ${treeHash}`;
+        let content = `tree ${treeHash}\n`;
 
-        content += `\nauthor ${this.author.toString()}`;
-
+        this.parents.forEach((hash) => {
+            content += `parent ${hash}\n`;
+        });
+        content += `author ${this.author.toString()}`;
         content += `\ncommitter ${this.committer.toString()}`;
-
         content += `\n\n${this.message}\n`;
 
         const contentBuffer = Buffer.from(content);
@@ -53,6 +57,10 @@ export class Commit implements GitCommit {
         
         this.hash = hash;
         return hash;
+    }
+
+    private setParents(parent: string) {
+        this.parents.push(parent);
     }
 
     private async writeMessage(message: string) {
