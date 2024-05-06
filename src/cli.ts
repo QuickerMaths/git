@@ -215,10 +215,17 @@ export function cli(args: string[]) {
                 type: 'string',
                 default: ''
             })
+            .option('message', {
+                alias: 'm',
+                description: 'message that describes the commit',
+                type: 'string',
+                default: '',
+                demandOption: true
+            })
         },
         async (argv) => {
             const gitRoot = await ensureGitRepo();
-            await commandWrapper(() => commitTree(gitRoot, argv.tree));
+            await commandWrapper(() => commitTree(gitRoot, argv.tree, argv.message));
         }
     )
 }
