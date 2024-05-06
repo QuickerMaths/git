@@ -220,7 +220,6 @@ export function cli(args: string[]) {
                 alias: 'm',
                 description: 'message that describes the commit',
                 type: 'string',
-                default: '',
             })
             .option('parent', { 
                 alias: 'p',

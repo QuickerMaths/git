@@ -22,7 +22,7 @@ export class Commit implements GitCommit {
         this.parents = [];
     }
 
-    async createCommit(gitRoot: string, treeHash: string, message: string, parent?: string) {
+    async createCommit(gitRoot: string, treeHash: string, message?: string, parent?: string) {
         const { type } = await parseObject(gitRoot, treeHash); 
         if(type.toString() !== 'tree') throw Error(`fatal: Invalid Object type ${type}`);
 
@@ -63,8 +63,8 @@ export class Commit implements GitCommit {
         this.parents.push(parent);
     }
 
-    private async writeMessage(message: string) {
-        if(!!message.length) return this.message = message; 
+    private async writeMessage(message?: string) {
+        if(message) return this.message = message; 
 
         process.stdout.write('Please specify commit message:\n');
         const stdinMessage = await getStdin();
