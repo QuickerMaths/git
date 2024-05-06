@@ -14,12 +14,12 @@ export class Commit implements GitCommit {
     message;
     parents: string[];
 
-    constructor() {
+    constructor(parents?: string[]) {
         this.hash = '';
         this.author = '';
         this.committer = '';
         this.message = '';
-        this.parents = [];
+        this.parents = parents || [];
     }
 
     async createCommit(gitRoot: string, treeHash: string, message?: string, parent?: string) {
