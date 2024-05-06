@@ -47,3 +47,9 @@ export interface IGitTree {
     treeObjects: Map<string, IGitTreeObject>;
 }
 
+export interface GitCommit {
+    hash: string;
+    author: string;
+    committer: string;
+    message: string;
+}
