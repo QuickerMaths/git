@@ -8,6 +8,7 @@ import { FileStatusCode } from "../enums/enums";
 import { Stats } from "fs";
 import { hashObject } from "./hash-object";
 import { FgRed, ColorReset, FgGreen } from "../constants/constants";
+import { getCurrentBranch } from "../utils/getCurrentBranch";
 
 function processUntrackedFile(gitRoot: string, argvPath: string, workingTreeFilesStats: Map<string, Stats>) {
     try {
@@ -133,10 +134,8 @@ export async function gitStatus(gitRoot: string, argvPaths: string[], untrackedF
     const workingTreeFilesStats = new Map<string, Stats>;
     const statusFiles = new Map<string, FileStatusCode>;
 
-    const pathToHead = path.join(gitRoot, '.git/HEAD');
     const pathToIndex = path.join(gitRoot, '.git/index');
-    const headFile = fsSync.readFileSync(pathToHead, 'utf-8');
-    const currentBranch = path.basename(headFile);
+    const currentBranch = getCurrentBranch(gitRoot);
 
     await readWorkingTree(gitRoot, argvPaths, untrackedFiles, workingTreeFilesStats);
 
