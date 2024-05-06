@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "test": "test",
-    "build": "esbuild src/bin.ts --bundle --platform=node --outfile=dist/bin.js --packages=external"
+    "build": "esbuild src/bin.ts --bundle --platform=node --outfile=dist/bin.js --packages=external --watch"
   },
   "repository": {
     "type": "git",
@@ -18,11 +18,13 @@
   "author": "QuickerMaths",
   "license": "MIT",
   "devDependencies": {
+    "@types/ini": "^4.1.0",
     "@types/node": "^20.12.7",
     "@types/yargs": "^17.0.32",
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "ini": "^4.1.2",
     "yargs": "^17.7.2"
   }
 }
