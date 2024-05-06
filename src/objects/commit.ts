@@ -5,6 +5,7 @@ import ini from 'ini';
 import { parseObject } from '../utils/parseObject';
 import { createHash } from 'crypto';
 import { GitCommit } from '../types/types';
+import { getStdin } from '../utils/getStdin';
 
 export class Commit implements GitCommit {
     hash;
@@ -24,7 +25,7 @@ export class Commit implements GitCommit {
         if(type.toString() !== 'tree') throw Error(`fatal: Invalid Object type ${type}`);
 
         this.signCommit();
-        this.writeMessage(message);
+        await this.writeMessage(message);
 
         let content = `tree ${treeHash}`;
 
@@ -54,8 +55,12 @@ export class Commit implements GitCommit {
         return hash;
     }
 
-    private writeMessage(message: string) {
-       this.message = message; 
+    private async writeMessage(message: string) {
+        if(!!message.length) return this.message = message; 
+
+        process.stdout.write('Please specify commit message:\n');
+        const stdinMessage = await getStdin();
+        this.message = stdinMessage.toString();
     }
 
     private signCommit() {
