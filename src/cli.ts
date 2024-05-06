@@ -9,6 +9,7 @@ import { catFile } from './commands/cat-file';
 import { writeTree } from './commands/write-tree';
 import { lsTree } from './commands/ls-tree';
 import { commitTree } from './commands/commit-tree';
+import { commit } from './commands/commit';
 
 async function commandWrapper(callback: () => Promise<string | string[] | Buffer | undefined | void>) {
     try {
@@ -232,4 +233,20 @@ export function cli(args: string[]) {
             await commandWrapper(() => commitTree(gitRoot, argv.tree, argv.message, argv.parent));
         }
     )
+    .command(
+        'commit',
+        'record changes to the repository',
+        (argv) => {
+            return argv
+            .option('message', {
+                alias: 'm',
+                type: 'string',
+                description: 'message that describes the commit'
+            })
+        },
+        async (argv) => {
+            const gitRoot = await ensureGitRepo();
+            await commandWrapper(() => commit(gitRoot, argv.message));
+        }
+    );
 }
