@@ -220,7 +220,6 @@ export function cli(args: string[]) {
                 description: 'message that describes the commit',
                 type: 'string',
                 default: '',
-                demandOption: true
             })
         },
         async (argv) => {
