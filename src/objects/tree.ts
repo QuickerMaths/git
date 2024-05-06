@@ -94,7 +94,7 @@ export class TreeObject implements IGitTreeObject {
     }
 
     hashTree(gitRoot: string, write: boolean = false) {
-        if(this.mode === FileMode.REGULAR) return this.hash;
+        if(this.mode === FileMode.REGULAR) return this.hash as string;
         const buffers: Buffer[] = [];
 
         this.children.forEach(child => {
