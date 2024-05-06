@@ -8,6 +8,7 @@ import { gitStatus } from './commands/status';
 import { catFile } from './commands/cat-file';
 import { writeTree } from './commands/write-tree';
 import { lsTree } from './commands/ls-tree';
+import { commitTree } from './commands/commit-tree';
 
 async function commandWrapper(callback: () => Promise<string | string[] | Buffer | undefined | void>) {
     try {
@@ -202,6 +203,22 @@ export function cli(args: string[]) {
         async (argv) => {
             const gitRoot = await ensureGitRepo();
             await commandWrapper(() => lsTree(gitRoot, argv.hash, argv.recursive, argv.showTree)); 
+        }
+    )
+    .command(
+        'commit-tree <tree>',
+        'create new commit object',
+        (argv) => {
+            return argv
+            .positional('tree', {
+                describe: 'tree obeject to create commit with',
+                type: 'string',
+                default: ''
+            })
+        },
+        async (argv) => {
+            const gitRoot = await ensureGitRepo();
+            await commandWrapper(() => commitTree(gitRoot, argv.tree));
         }
     )
 }
