@@ -59,6 +59,46 @@ export class Commit implements GitCommit {
         return hash;
     }
 
+    async decodeCommit(gitRoot: string, commitHash: string) {
+        const { type, content } = await parseObject(gitRoot, commitHash);
+        
+        if(type.toString() !== 'commit') throw Error(`fatal: Invalid object type ${type}`);
+
+
+        for(let i = 1; i < content.length;) {
+            let startPosition = i;
+            while(content[i] !== Buffer.from('\n')[0]) {
+                i++;
+            }
+
+            const newLine = content.subarray(startPosition, i).toString().trim().split(' ');
+            i++;
+
+            if (newLine[0].length === 0) {
+                // Message
+                this.message = content.subarray(i, content.length).toString().trim();
+                break;
+            }
+
+            switch (newLine[0]) {
+                case 'tree':
+                    this.hash = newLine[1];
+                break;
+                case 'parent':
+                    this.parents.push(newLine[1]);
+                break;
+                case 'author': 
+                    this.author = `${newLine[1]} ${newLine[2]} ${newLine[3]} ${newLine[4]}` 
+                break;
+                case 'committer':
+                    this.committer = `${newLine[1]} ${newLine[2]} ${newLine[3]} ${newLine[4]}` 
+                break;
+                default:
+                    throw new Error(`Invalid character ${newLine[0]} found at ${i}`);
+            }
+        }
+    }
+
     private async setParents(gitRoot: string, parent: string) {
         const { type } = await parseObject(gitRoot, parent); 
         if(type.toString() !== 'tree') throw Error(`fatal: Invalid Object type ${type}`);
