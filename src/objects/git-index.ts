@@ -16,6 +16,10 @@ export class GitIndex implements IGitIndex {
         entries.forEach(entry => this.entries.push(entry));
     }
 
+    remove(entry: IGitEntry) {
+        this.entries.filter(e => e !== entry);
+    }
+
     async write() {
         const header = Buffer.alloc(12);
         header.set(Buffer.from(this.header.signature), 0);
