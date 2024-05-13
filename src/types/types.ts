@@ -1,4 +1,5 @@
-import { FileMode, Stage } from "../enums/enums";
+import { Stats } from "fs";
+import { FileMode, FileStatusCode, Stage } from "../enums/enums";
 import { TreeObject } from "../objects/tree";
 
 export const GitObjects = ['blob', 'tree', 'commit', 'tag'];
@@ -53,4 +54,15 @@ export interface GitCommit {
     committer: string;
     message: string;
     parents: string[];
+}
+
+export interface IFileStatus {
+    name: string;
+    staging: FileStatusCode;
+    workTree: FileStatusCode;
+}
+
+export interface IWorkTreeFilesStats {
+    stats: Stats;
+    path: string;
 }
