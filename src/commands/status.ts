@@ -14,11 +14,11 @@ import { Tree, TreeObject } from "../objects/tree";
 import { processTree } from "../utils/processTree";
 import { IFileStatus, IWorkTreeFilesStats } from "../types/types";
 
-function getWorkingTreeFileStats(gitRoot: string, workingTreeFilesStats: Map<string, IWorkTreeFilesStats>, argvPath?: string) {
+function getWorkingTreeFileStats(gitRoot: string, workingTreeFilesStats: Map<string, IWorkTreeFilesStats>, untrackedFiles: boolean, argvPath?: string) {
     const ignore = ['.git/**', '**/.DS_Store']
     const files = globSync('**/*', {
         cwd: argvPath || gitRoot,
-        nodir: !!!argvPath,
+        nodir: !!!argvPath && !untrackedFiles,
         dot: true,
         ignore
     });
@@ -30,26 +30,6 @@ function getWorkingTreeFileStats(gitRoot: string, workingTreeFilesStats: Map<str
     });
 
     return workingTreeFilesStats;
-}
-
-async function workTreeIndexDiff(gitRoot:string, workingTreeFilesStats: Map<string, IWorkTreeFilesStats>, index: GitIndex) {
-    const statusFiles: Map<string, FileStatusCode> = new Map();
-    await Promise.all(index.entries.map(async entry => {
-       if(workingTreeFilesStats.has(entry.name)) {
-           const workingTreeFileHash = await hashObject(gitRoot, [entry.name], 'blob', false, false)
-           const fileStatus = workingTreeFileHash[0] === entry.sha ? FileStatusCode.UNMODIFIED : FileStatusCode.MODIFIED;
-
-           statusFiles.set(entry.name, fileStatus);
-       } else {
-           statusFiles.set(entry.name, FileStatusCode.DELETED);
-       }
-
-       workingTreeFilesStats.delete(entry.name);
-    }));
-
-    workingTreeFilesStats.forEach((_value, key) => statusFiles.set(key, FileStatusCode.UNTRACKED));
-    
-    return statusFiles;
 }
 
 async function headCommitIndexDiff(gitRoot: string, index: GitIndex){
@@ -77,15 +57,14 @@ async function headCommitIndexDiff(gitRoot: string, index: GitIndex){
     const treeArray = [treeRoot];
     await processTree(gitRoot, tree, treeArray, true);
 
-    //@ts-ignore
-    const treeFiles = [...tree.treeObjects.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    const treeFiles = Array.from(tree.treeObjects.entries()).sort((a, b) => a[0].localeCompare(b[0]));
     treeFiles.forEach(([_name, file]) => {
         const indexEntry = index.getEntry(file.path);
 
         if (indexEntry) {
             statusFiles.set(file.path, indexEntry.sha === file.hash ? FileStatusCode.UNMODIFIED : FileStatusCode.MODIFIED);
         } else {
-            statusFiles.set(file.pat, FileStatusCode.DELETED);
+            statusFiles.set(file.path, FileStatusCode.DELETED);
         }
         index.remove(file.path);
 
@@ -97,16 +76,36 @@ async function headCommitIndexDiff(gitRoot: string, index: GitIndex){
     return statusFiles;
 }
 
+async function workTreeIndexDiff(gitRoot:string, workingTreeFilesStats: Map<string, IWorkTreeFilesStats>, index: GitIndex) {
+    const statusFiles: Map<string, FileStatusCode> = new Map();
+    await Promise.all(index.entries.map(async entry => {
+        if(workingTreeFilesStats.has(entry.name)) {
+            const workingTreeFileHash = await hashObject(gitRoot, [entry.name], 'blob', false, false)
+            const fileStatus = workingTreeFileHash[0] === entry.sha ? FileStatusCode.UNMODIFIED : FileStatusCode.MODIFIED;
+
+            statusFiles.set(entry.name, fileStatus);
+        } else {
+            statusFiles.set(entry.name, FileStatusCode.DELETED);
+        }
+
+        workingTreeFilesStats.delete(entry.name);
+    }));
+
+    workingTreeFilesStats.forEach((_value, key) => statusFiles.set(key, FileStatusCode.UNTRACKED));
+
+    return statusFiles;
+}
+
 async function setStatus(gitRoot: string, argvPaths: string[], untrackedFiles: boolean) {
     const fileStatus: Map<string, IFileStatus> = new Map();
     const workingTreeFilesStats: Map<string, IWorkTreeFilesStats> = new Map();
     // if argvPaths includes . path we read from gitRoot
     if(!!argvPaths.length && !argvPaths.includes('.')) {
         argvPaths.forEach(path => {
-            getWorkingTreeFileStats(gitRoot, workingTreeFilesStats, path); 
+            getWorkingTreeFileStats(gitRoot, workingTreeFilesStats, untrackedFiles, path); 
         });
     } else {
-        getWorkingTreeFileStats(gitRoot, workingTreeFilesStats);
+        getWorkingTreeFileStats(gitRoot, workingTreeFilesStats, untrackedFiles);
     }
 
     const pathToIndex = path.join(gitRoot, '.git/index');
@@ -124,6 +123,7 @@ async function setStatus(gitRoot: string, argvPaths: string[], untrackedFiles: b
     }
 
     const index = await parseIndex(pathToIndex);
+
 
     const headCommitDiff = await headCommitIndexDiff(gitRoot, index);
     headCommitDiff.forEach((status, name) => {
@@ -154,6 +154,18 @@ async function setStatus(gitRoot: string, argvPaths: string[], untrackedFiles: b
         fileStatus.set(name, file);
     });
 
+    if(!!argvPaths.length && !argvPaths.includes('.')) {
+        const fileStatusArray = Array.from(fileStatus.keys());
+        for (let name of fileStatusArray) {
+            if (!argvPaths.some(argvPath => {
+                const relativePath = path.join(path.relative(gitRoot, process.cwd()), argvPath);
+                return name.startsWith(relativePath)
+            })) {
+                fileStatus.delete(name);
+            }
+        }
+    }
+
     return fileStatus;
 }
 
@@ -163,8 +175,7 @@ function sendOutput(gitRoot: string, currentBranch: string, statusFiles: Map<str
     let changesNotStaged = ``;
     let untrackedFiles = ``;
     const cwd = path.relative(gitRoot, process.cwd());
-    //@ts-ignore
-    const status = [...statusFiles.values()].sort((a, b) => a.name.localeCompare(b.name));
+    const status = Array.from(statusFiles.values()).sort((a, b) => a.name.localeCompare(b.name));
     
     status.forEach((e) => {
         const name = path.relative(cwd, e.name);
