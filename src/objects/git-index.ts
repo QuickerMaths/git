@@ -31,7 +31,9 @@ export class GitIndex implements IGitIndex {
         header.writeInt32BE(this.entries.length, 8); 
         
         const encodedEntries: Buffer[] = []; 
-        this.entries.forEach(entry => {
+        const sortedEntries = this.entries.sort((a, b) => a.name.localeCompare(b.name)); 
+
+        sortedEntries.forEach(entry => {
             encodedEntries.push(encodeEntry(entry));
         });
 
