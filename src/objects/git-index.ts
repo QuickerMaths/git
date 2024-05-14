@@ -13,7 +13,11 @@ export class GitIndex implements IGitIndex {
     }
 
     add(entries: IGitEntry[]) {
-        entries.forEach(entry => this.entries.push(entry));
+        const entriesMap = new Map(this.entries.map(entry => [entry.name, entry]));
+        entries.forEach(entry => {
+            entriesMap.set(entry.name, entry);
+        });
+        this.entries = Array.from(entriesMap.values());
     }
 
     remove(name: string) {
