@@ -14,8 +14,25 @@ import { Tree, TreeObject } from "../objects/tree";
 import { processTree } from "../utils/processTree";
 import { IFileStatus, IWorkTreeFilesStats } from "../types/types";
 
+function getGitIgnore(gitRoot: string) {
+    const gitIgnorePath = path.join(gitRoot, '.gitignore');
+    const ignore: string[] = ['.git/**', '**/.DS_Store'];
+
+    if(fsSync.existsSync(gitIgnorePath)) {
+        const gitIgnore = fsSync.readFileSync(gitIgnorePath, 'utf-8');
+
+        gitIgnore.split('\n').filter(line => line.trim() !== '').forEach(line => {
+            if(line.startsWith('#')) return;
+            ignore.push(line);
+        });
+    }
+
+    return ignore;
+}
+
 function getWorkingTreeFileStats(gitRoot: string, workingTreeFilesStats: Map<string, IWorkTreeFilesStats>, untrackedFiles: boolean, argvPath?: string) {
-    const ignore = ['.git/**', '**/.DS_Store']
+    const ignore = getGitIgnore(gitRoot);
+    console.log(ignore);
     const files = globSync('**/*', {
         cwd: argvPath || gitRoot,
         nodir: !!!argvPath && !untrackedFiles,
