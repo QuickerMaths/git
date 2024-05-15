@@ -10,6 +10,7 @@ import { writeTree } from './commands/write-tree';
 import { lsTree } from './commands/ls-tree';
 import { commitTree } from './commands/commit-tree';
 import { commit } from './commands/commit';
+import { add } from './commands/add';
 
 async function commandWrapper(callback: () => Promise<string | string[] | Buffer | undefined | void>) {
     try {
@@ -247,5 +248,26 @@ export function cli(args: string[]) {
             const gitRoot = await ensureGitRepo();
             await commandWrapper(() => commit(gitRoot, argv.message));
         }
-    );
+    )
+    .command(
+        'add [files..]',
+        'add file contents to the index',
+        (argv) => {
+            return argv
+            .positional('files', {
+                describe: 'files to add to the index',
+                default: []
+            })
+            .option('all', {
+                alias: 'A',
+                type: 'boolean',
+                description: 'add all files to the index',
+                default: false
+            })
+        },
+        async (argv) => {
+            const gitRoot = await ensureGitRepo();
+            await commandWrapper(() => add(gitRoot, argv.files, argv.all));
+        }
+    )
 }
