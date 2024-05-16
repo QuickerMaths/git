@@ -1,9 +1,7 @@
 import path from "path";
 import fs from 'fs/promises';
-import * as fsSync from 'fs';
-import { globSync } from 'glob';
 import { exists } from '../utils/exists';
-import { GitIndex } from '../objects/git-index'; 
+import { GitIndex } from '../objects/git-index';
 import { parseIndex } from '../utils/parseIndex';
 import { FileMode, FileStatusCode } from "../enums/enums";
 import { hashObject } from "./hash-object";
@@ -13,41 +11,7 @@ import { Commit } from "../objects/commit";
 import { Tree, TreeObject } from "../objects/tree";
 import { processTree } from "../utils/processTree";
 import { IFileStatus, IWorkTreeFilesStats } from "../types/types";
-
-function getGitIgnore(gitRoot: string) {
-    const gitIgnorePath = path.join(gitRoot, '.gitignore');
-    const ignore: string[] = ['.git/**', '**/.DS_Store'];
-
-    if(fsSync.existsSync(gitIgnorePath)) {
-        const gitIgnore = fsSync.readFileSync(gitIgnorePath, 'utf-8');
-
-        gitIgnore.split('\n').filter(line => line.trim() !== '').forEach(line => {
-            if(line.startsWith('#')) return;
-            ignore.push(line);
-        });
-    }
-
-    return ignore;
-}
-
-function getWorkingTreeFileStats(gitRoot: string, workingTreeFilesStats: Map<string, IWorkTreeFilesStats>, untrackedFiles: boolean, argvPath?: string) {
-    const ignore = getGitIgnore(gitRoot);
-    console.log(ignore);
-    const files = globSync('**/*', {
-        cwd: argvPath || gitRoot,
-        nodir: !!!argvPath && !untrackedFiles,
-        dot: true,
-        ignore
-    });
-
-    files.forEach(file => {
-        let filePath = file;
-        if(argvPath) filePath = path.join(argvPath, file); 
-        workingTreeFilesStats.set(filePath, { stats: fsSync.lstatSync(path.join(gitRoot, filePath)), path: filePath });
-    });
-
-    return workingTreeFilesStats;
-}
+import { getWorkingTreeFileStats } from "../utils/getWorkingTreeFilesStats";
 
 async function headCommitIndexDiff(gitRoot: string, index: GitIndex){
     const statusFiles: Map<string, FileStatusCode> = new Map();
