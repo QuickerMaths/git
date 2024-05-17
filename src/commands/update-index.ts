@@ -1,5 +1,5 @@
 import path from 'path';
-import fs from 'fs/promises';
+import fs from 'fs';
 import { GitIndex } from '../objects/git-index';
 import { IGitEntry } from '../types/types';
 import { createIndexEntry } from '../utils/createIndexEntry';
@@ -13,15 +13,10 @@ export async function updateIndex(gitRoot: string, files: string [], add: boolea
     const sortedFiles = files.sort();
 
     for(const file of sortedFiles) {
-        try {
-            await fs.access(file);
+        if(fs.existsSync(path.relative(process.cwd(), file))) {
             const entry = await createIndexEntry(file, gitRoot);
             entries.push(entry);
-        } catch(err: any) {
-            if(err.code === 'EISDIR') {
-                throw Error(`error: ${file}: is a directory - add file inside instead`)
-            }
-
+        } else {
             throw Error(`fatal: Cannot open '${file}': No such file or directory.`);
         }
     }
@@ -35,5 +30,5 @@ export async function updateIndex(gitRoot: string, files: string [], add: boolea
         index = new GitIndex({ signature: 'DIRC', version: 2 }, entries)
     }
 
-    if(add && !!files.length) await index.write(); 
+    if(add && !!files.length) await index.write(gitRoot); 
 }

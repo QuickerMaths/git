@@ -5,7 +5,7 @@ import { hashContent } from './hashContents';
 import { IGitEntry } from '../types/types';
 
 export async function createIndexEntry(file: string, gitRoot: string): Promise<IGitEntry> { 
-    const relativeFilePath = path.relative(gitRoot, file);
+    const relativeFilePath = path.relative(process.cwd(), file);
     const stat = await fsPromises.lstat(relativeFilePath);
 
     const ctimeSec = Math.floor(stat.ctimeMs / 1000);
@@ -28,7 +28,7 @@ export async function createIndexEntry(file: string, gitRoot: string): Promise<I
         gid: stat.gid, 
         fileSize: stat.size,
         sha: sha, 
-        name: relativeFilePath, 
+        name: path.relative(gitRoot, relativeFilePath), 
         stage: Stage.ZERO,
         assumeValid: 0,
         indentToAdd: false,
