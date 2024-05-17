@@ -12,7 +12,7 @@ export async function writeTree(gitRoot: string, write: boolean = true) {
         index = await parseIndex(pathToIndex);
     } else {
         index = new GitIndex({ signature: 'DIRC', version: 2 }, []);
-        await index.write();
+        await index.write(gitRoot);
     }
     
     const tree = new Tree();
