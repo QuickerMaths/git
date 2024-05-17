@@ -18,7 +18,7 @@ export async function hashObject(gitRoot: string, files: string[], type: string,
 
     for(const file of files) {
         try {
-            await fs.access(path.join(gitRoot, file));
+            await fs.access(file);
             const filePath = path.resolve(gitRoot, file);
             filePaths.push(filePath);
         } catch {
