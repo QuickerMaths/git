@@ -1,21 +1,21 @@
 import path from "path";
-import { exists } from "./exists";
+import fs from 'fs';
 
-export async function ensureGitRepo(): Promise<string> {
+export function ensureGitRepo(): string {
   let root = process.cwd();
   let pathToGit: string;
 
   while (root !== '/') {
     pathToGit = path.join(root, '.git');
 
-    if (await exists(pathToGit)) {
+    if (fs.existsSync(pathToGit)) {
       return root;
     }
     root = path.dirname(root);
   }
 
   pathToGit = path.join(root, '.git');
-  if (await exists(pathToGit)) {
+  if (fs.existsSync(pathToGit)) {
     return root;
   }
 
