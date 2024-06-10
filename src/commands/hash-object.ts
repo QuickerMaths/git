@@ -30,13 +30,13 @@ export async function hashObject(gitRoot: string, files: string[], type: string,
 
     if(stdin) {
         const content = await getStdin()
-        const hash = await hashContent(gitRoot, type, write, content);
+        const hash = hashContent(gitRoot, type, write, content);
         hashes.push(hash);
     }
 
     await Promise.all(filePaths.map(async filePath => {
         const content = await fs.readFile(filePath);
-        const hash = await hashContent(gitRoot, type, write, content);
+        const hash = hashContent(gitRoot, type, write, content);
         hashes.push(hash);
     }));
 

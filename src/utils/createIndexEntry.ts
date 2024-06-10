@@ -14,7 +14,7 @@ export async function createIndexEntry(file: string, gitRoot: string): Promise<I
     const mtimeNano = Math.floor((stat.mtimeMs - mtimeSec * 1000) * 1000000);
 
     const content = await fsPromises.readFile(file);
-    const sha = await hashContent(gitRoot, 'blob', true, content);
+    const sha = hashContent(gitRoot, 'blob', true, content);
 
     return {
         ctimeSec,

@@ -1,9 +1,9 @@
 import { createHash } from "crypto";
 import path from "path";
-import fs from 'fs/promises';
+import fs from 'fs';
 import zlib from 'zlib';
 
-export async function hashContent(gitRoot:string, type: string, write: boolean, content: Buffer) {
+export function hashContent(gitRoot:string, type: string, write: boolean, content: Buffer) {
     const bufferToHash = Buffer.from(`${type} ${content.byteLength}\0${content}`)
 
     const hash = createHash('sha1').update(bufferToHash).digest('hex');
@@ -15,8 +15,8 @@ export async function hashContent(gitRoot:string, type: string, write: boolean, 
         const pathToBlobDir = path.resolve(gitRoot, '.git', 'objects', blobDirName);
         const pathToBlobFile = path.join(pathToBlobDir, blobName); 
 
-        await fs.mkdir(pathToBlobDir, { recursive: true });
-        await fs.writeFile(pathToBlobFile, compressedContent);
+        fs.mkdirSync(pathToBlobDir, { recursive: true });
+        fs.writeFileSync(pathToBlobFile, compressedContent);
     }
 
     return hash;

@@ -35,7 +35,6 @@ export async function diff(gitRoot: string) {
     const index = await parseIndex(pathToIndex); 
     const statusFiles = await setStatus(gitRoot, [], true);
 
-    console.log(statusFiles);
     let str = '';
 
         statusFiles.forEach(file => {
@@ -47,7 +46,6 @@ export async function diff(gitRoot: string) {
                 case FileStatusCode.DELETED: {
                     const entry = index.getEntry(file.name);
                     const object = parseObject(gitRoot, entry?.sha!);
-                    console.log(entry, object);
 
                     const file1: IFile = {
                         name: file.name,
@@ -60,7 +58,6 @@ export async function diff(gitRoot: string) {
                         content: '',
                         hash: ''.padStart(20, '0')
                     }
-                    console.log(file1, file2);
                         
                     str += getDiff(file1, file2, file.workTree, entry?.modeType!);
                     break;
@@ -75,7 +72,7 @@ export async function diff(gitRoot: string) {
                         hash: entry?.sha!
                     }
 
-                    const hash = await hashObject(gitRoot, [file.name], 'blob', false, false) 
+                    const hash = hashObject(gitRoot, [file.name], 'blob', false, false) 
                     const file2: IFile = {
                         name: file.name,
                         content: fs.readFileSync(file.name, 'utf-8'),
