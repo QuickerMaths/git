@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import fs from 'fs';
 import path from 'node:path';
 import { GitObjectsType, GitObjects } from '../types/types';
 import { hashContent } from '../utils/hashContents';
@@ -8,7 +8,7 @@ function isType(type: string): type is GitObjectsType  {
     return GitObjects.includes(type);
 }
 
-export async function hashObject(gitRoot: string, files: string[], type: string, write: boolean, stdin: boolean) {
+export function hashObject(gitRoot: string, files: string[], type: string, write: boolean, stdin: boolean) {
     if(!isType(type)) throw Error(`fatal: invalid object '${type}'`);
     if(type !== 'blob') throw Error(`fatal: ${type} is not supported, try blob`);
     
@@ -17,28 +17,28 @@ export async function hashObject(gitRoot: string, files: string[], type: string,
     const filePaths = [];
 
     for(const file of files) {
-        try {
-            await fs.access(file);
+        if(fs.existsSync(file)) {
             const filePath = path.resolve(gitRoot, file);
             filePaths.push(filePath);
-        } catch {
+        } else {
             throw Error(`fatal: Cannot open '${file}': No such file or directory.`);
         }
     }
 
     const hashes: string[] = [];
 
-    if(stdin) {
-        const content = await getStdin()
-        const hash = hashContent(gitRoot, type, write, content);
-        hashes.push(hash);
-    }
+    //TODO: implement sync way to get stdin
+    // if(stdin) {
+    //  const content = await getStdin()
+    //  const hash = hashContent(gitRoot, type, write, content);
+    // hashes.push(hash);
+    // }
 
-    await Promise.all(filePaths.map(async filePath => {
-        const content = await fs.readFile(filePath);
+    filePaths.map(filePath => {
+        const content = fs.readFileSync(filePath);
         const hash = hashContent(gitRoot, type, write, content);
         hashes.push(hash);
-    }));
+    });
 
     return hashes;
 }
