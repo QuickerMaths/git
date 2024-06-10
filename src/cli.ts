@@ -15,7 +15,7 @@ import { diff } from './commands/diff';
 
 async function commandWrapperAsync(callback: () => Promise<string | string[] | Buffer | undefined | void>) {
     try {
-        const output = callback();
+        const output = await callback();
         if(output) {
             if(Array.isArray(output)) {
                 output.forEach((line) => process.stdout.write(line + '\n'));
