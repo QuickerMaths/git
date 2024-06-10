@@ -30,10 +30,10 @@ function getDiff(file1: IFile, file2: IFile, status: FileStatusCode, mode: FileM
     return str + split.join('\n')
 }
 
-export async function diff(gitRoot: string) {
+export function diff(gitRoot: string) {
     const pathToIndex = path.resolve(gitRoot, '.git/index'); 
     const index = parseIndex(pathToIndex); 
-    const statusFiles = await setStatus(gitRoot, [], true);
+    const statusFiles = setStatus(gitRoot, [], true);
 
     let str = '';
 

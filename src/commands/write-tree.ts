@@ -4,7 +4,7 @@ import { parseIndex } from "../utils/parseIndex";
 import { GitIndex } from "../objects/git-index";
 import { Tree } from "../objects/tree";
 
-export async function writeTree(gitRoot: string, write: boolean = true) {
+export function writeTree(gitRoot: string, write: boolean = true) {
     let index: GitIndex;
     const pathToIndex = path.resolve(gitRoot, '.git/index');
 

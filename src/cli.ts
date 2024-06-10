@@ -13,9 +13,27 @@ import { commit } from './commands/commit';
 import { add } from './commands/add';
 import { diff } from './commands/diff';
 
-async function commandWrapper(callback: () => Promise<string | string[] | Buffer | undefined | void>) {
+async function commandWrapperAsync(callback: () => Promise<string | string[] | Buffer | undefined | void>) {
     try {
-        const output = await callback();
+        const output = callback();
+        if(output) {
+            if(Array.isArray(output)) {
+                output.forEach((line) => process.stdout.write(line + '\n'));
+            } else {
+                process.stdout.write(output + '\n');
+            }
+        } 
+        process.exit(0);
+    } catch(error) {
+        const e = error as Error;
+        process.stderr.write(e.message);
+        process.exit(1);
+    }
+}
+
+function commandWrapper(callback: () => string | string[] | Buffer | undefined | void) {
+    try {
+        const output = callback();
         if(output) {
             if(Array.isArray(output)) {
                 output.forEach((line) => process.stdout.write(line + '\n'));
@@ -49,7 +67,7 @@ export function cli(args: string[]) {
                 default: false
             })
         }, 
-        async (argv) => await commandWrapper(() => init(argv.path, argv.quiet)) 
+        (argv) => commandWrapper(() => init(argv.path, argv.quiet)) 
     )
     .command(
         'hash-object [files..]', 
@@ -78,9 +96,9 @@ export function cli(args: string[]) {
                     defualt: false
                 })
             },
-            async (argv) => {
-                const gitRoot = await ensureGitRepo()
-                await commandWrapper(() => hashObject(gitRoot, argv.files, argv.type, argv.write, !!argv.stdin))
+            (argv) => {
+                const gitRoot = ensureGitRepo()
+                commandWrapper(() => hashObject(gitRoot, argv.files, argv.type, argv.write, !!argv.stdin))
             }
     )
     .command(
@@ -98,9 +116,9 @@ export function cli(args: string[]) {
                     default: false,
             })
         },
-        async (argv) => {
-            const gitRoot = await ensureGitRepo();
-            await commandWrapper(() => updateIndex(gitRoot, argv.files, argv.add)); 
+        (argv) => {
+            const gitRoot = ensureGitRepo();
+            commandWrapper(() => updateIndex(gitRoot, argv.files, argv.add)); 
         }
     )
     .command(
@@ -119,9 +137,9 @@ export function cli(args: string[]) {
                 type: 'boolean'
             })
         },
-        async (argv) => {
-            const gitRoot = await ensureGitRepo();
-            await commandWrapper(() => gitStatus(gitRoot, argv.paths, argv.untrackedFiles)); 
+        (argv) => {
+            const gitRoot = ensureGitRepo();
+            commandWrapper(() => gitStatus(gitRoot, argv.paths, argv.untrackedFiles)); 
         }
     )
     .command(
@@ -158,9 +176,9 @@ export function cli(args: string[]) {
                 default: false
             })
         },
-        async (argv) => {
-            const gitRoot = await ensureGitRepo();
-            await commandWrapper(() => catFile(gitRoot, argv.type, argv.object, argv.returnType, argv.size, argv.prettyPrint));
+        (argv) => {
+            const gitRoot = ensureGitRepo();
+            commandWrapper(() => catFile(gitRoot, argv.type, argv.object, argv.returnType, argv.size, argv.prettyPrint));
         }
     )
     .command(
@@ -175,9 +193,9 @@ export function cli(args: string[]) {
                 default: true
             })
         },
-        async (argv) => {
-            const gitRoot = await ensureGitRepo();
-            await commandWrapper(() => writeTree(gitRoot, argv.write));
+        (argv) => {
+            const gitRoot = ensureGitRepo();
+            commandWrapper(() => writeTree(gitRoot, argv.write));
         }
     )
     .command(
@@ -203,9 +221,9 @@ export function cli(args: string[]) {
                 default: false
             })
         },
-        async (argv) => {
-            const gitRoot = await ensureGitRepo();
-            await commandWrapper(() => lsTree(gitRoot, argv.hash, argv.recursive, argv.showTree)); 
+        (argv) => {
+            const gitRoot = ensureGitRepo();
+            commandWrapper(() => lsTree(gitRoot, argv.hash, argv.recursive, argv.showTree)); 
         }
     )
     .command(
@@ -230,8 +248,8 @@ export function cli(args: string[]) {
             })
         },
         async (argv) => {
-            const gitRoot = await ensureGitRepo();
-            await commandWrapper(() => commitTree(gitRoot, argv.tree, argv.message, argv.parent));
+            const gitRoot = ensureGitRepo();
+            commandWrapperAsync(() => commitTree(gitRoot, argv.tree, argv.message, argv.parent));
         }
     )
     .command(
@@ -246,8 +264,8 @@ export function cli(args: string[]) {
             })
         },
         async (argv) => {
-            const gitRoot = await ensureGitRepo();
-            await commandWrapper(() => commit(gitRoot, argv.message));
+            const gitRoot = ensureGitRepo();
+            commandWrapperAsync(() => commit(gitRoot, argv.message));
         }
     )
     .command(
@@ -266,18 +284,18 @@ export function cli(args: string[]) {
                 default: false
             })
         },
-        async (argv) => {
-            const gitRoot = await ensureGitRepo();
-            await commandWrapper(() => add(gitRoot, argv.files, argv.all));
+        (argv) => {
+            const gitRoot = ensureGitRepo();
+            commandWrapper(() => add(gitRoot, argv.files, argv.all));
         }
     )
     .command(
         'diff [files..]',
         'show changes between commits, commit and working tree, etc',
         (argv) => argv,
-        async (_argv) => {
-            const gitRoot = await ensureGitRepo();
-            await commandWrapper(() => diff(gitRoot));
+        (_argv) => {
+            const gitRoot = ensureGitRepo();
+            commandWrapper(() => diff(gitRoot));
         }
     )
 }

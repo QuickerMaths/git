@@ -212,7 +212,7 @@ function sendOutput(gitRoot: string, currentBranch: string, statusFiles: Map<str
     return output;
 }
 
-export async function gitStatus(gitRoot: string, argvPaths: string[], untrackedFiles: boolean) {
+export function gitStatus(gitRoot: string, argvPaths: string[], untrackedFiles: boolean) {
     const currentBranch = getCurrentBranch(gitRoot);
 
     const status = setStatus(gitRoot, argvPaths, untrackedFiles);
