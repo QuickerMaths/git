@@ -1,19 +1,19 @@
-import * as fsPromises from 'fs/promises';
+import fs from 'fs';
 import path from 'path';
 import { FileMode, Stage } from '../enums/enums';
 import { hashContent } from './hashContents';
 import { IGitEntry } from '../types/types';
 
-export async function createIndexEntry(file: string, gitRoot: string): Promise<IGitEntry> { 
+export function createIndexEntry(file: string, gitRoot: string): IGitEntry { 
     const relativeFilePath = path.relative(process.cwd(), file);
-    const stat = await fsPromises.lstat(relativeFilePath);
+    const stat = fs.lstatSync(relativeFilePath);
 
     const ctimeSec = Math.floor(stat.ctimeMs / 1000);
     const ctimeNano = Math.floor((stat.ctimeMs - ctimeSec * 1000) * 1000000);
     const mtimeSec = Math.floor(stat.mtimeMs / 1000);
     const mtimeNano = Math.floor((stat.mtimeMs - mtimeSec * 1000) * 1000000);
 
-    const content = await fsPromises.readFile(file);
+    const content = fs.readFileSync(file);
     const sha = hashContent(gitRoot, 'blob', true, content);
 
     return {

@@ -14,7 +14,7 @@ export async function updateIndex(gitRoot: string, files: string [], add: boolea
 
     for(const file of sortedFiles) {
         if(fs.existsSync(path.relative(process.cwd(), file))) {
-            const entry = await createIndexEntry(file, gitRoot);
+            const entry = createIndexEntry(file, gitRoot);
             entries.push(entry);
         } else {
             throw Error(`fatal: Cannot open '${file}': No such file or directory.`);
