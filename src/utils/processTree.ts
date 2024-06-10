@@ -22,7 +22,7 @@ export function prepareTreeOutput(tree: Tree, recursive?: boolean, showTree?: bo
 
 export async function processTree(gitRoot: string, tree: Tree , treeArray: TreeObject[], recursive: boolean) {
     const treeObject = treeArray.shift();
-    const { content } = await parseObject(gitRoot, treeObject?.hash!);
+    const { content } = parseObject(gitRoot, treeObject?.hash!);
 
     for(let i = 1; i < content.length;) {
         let modeStart = i;

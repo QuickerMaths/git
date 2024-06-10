@@ -77,7 +77,7 @@ async function workTreeIndexDiff(gitRoot:string, workingTreeFilesStats: Map<stri
     return statusFiles;
 }
 
-async function setStatus(gitRoot: string, argvPaths: string[], untrackedFiles: boolean) {
+export async function setStatus(gitRoot: string, argvPaths: string[], untrackedFiles: boolean) {
     const fileStatus: Map<string, IFileStatus> = new Map();
     const workingTreeFilesStats: Map<string, IWorkTreeFilesStats> = new Map();
     // if argvPaths includes . path we read from gitRoot

@@ -23,7 +23,7 @@ export class Commit implements GitCommit {
     }
 
     async createCommit(gitRoot: string, treeHash: string, message?: string, parent?: string) {
-        const { type } = await parseObject(gitRoot, treeHash); 
+        const { type } = parseObject(gitRoot, treeHash); 
         if(type.toString() !== 'tree') throw Error(`fatal: Invalid Object type ${type}`);
 
         if(parent) this.setParents(gitRoot, parent);
@@ -60,7 +60,7 @@ export class Commit implements GitCommit {
     }
 
     async decodeCommit(gitRoot: string, commitHash: string) {
-        const { type, content } = await parseObject(gitRoot, commitHash);
+        const { type, content } = parseObject(gitRoot, commitHash);
         
         if(type.toString() !== 'commit') throw Error(`fatal: Invalid object type ${type}`);
 
@@ -100,7 +100,7 @@ export class Commit implements GitCommit {
     }
 
     private async setParents(gitRoot: string, parent: string) {
-        const { type } = await parseObject(gitRoot, parent); 
+        const { type } = parseObject(gitRoot, parent); 
         if(type.toString() !== 'tree') throw Error(`fatal: Invalid Object type ${type}`);
 
         this.parents.push(parent);

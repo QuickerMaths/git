@@ -1,6 +1,5 @@
-import { exists } from "./exists";
 import path from "path";
-import fs from 'fs/promises';
+import fs from 'fs';
 import zlib from 'zlib';
 
 function parseHeader(header: Buffer) {
@@ -16,14 +15,14 @@ function parseHeader(header: Buffer) {
     }
 }
 
-export async function parseObject(gitRoot: string, argvObject: string) {
+export function parseObject(gitRoot: string, argvObject: string) {
     const objectDir = argvObject.slice(0, 2);;
     const pathToObjectDir = path.resolve(gitRoot, '.git/objects', objectDir);
     const objectName = argvObject.substring(2, argvObject.length);
     const pathToObject = path.join(pathToObjectDir, objectName);
 
-    if(!await exists(pathToObject)) throw Error(`fatal: Invalid object ${argvObject}`)
-    const fileContent = await fs.readFile(pathToObject);
+    if(!fs.existsSync(pathToObject)) throw Error(`fatal: Invalid object ${argvObject}`)
+    const fileContent = fs.readFileSync(pathToObject);
     const inflatedContent = zlib.inflateSync(fileContent);
 
     let i = 0;
