@@ -1,96 +1,96 @@
-import fs from 'fs/promises';
+import fs from 'fs';
 import path from 'node:path';
 
 const defaultFilesPath = path.resolve(__dirname, '..', 'default-files')
 let isReinitialized = false;
 
-async function ensureExists(dirPath: string, callback: () => Promise<void>) {
+function ensureExists(dirPath: string, callback: () => void) {
     try {
-        await fs.access(dirPath);
+        fs.existsSync(dirPath);
     } catch {
-        await callback()
+        callback()
     }
 }
 
-async function createGitDir(gitDirPath: string) {
+function createGitDir(gitDirPath: string) {
     try {
-        await fs.mkdir(gitDirPath, { recursive: true });
+        fs.mkdirSync(gitDirPath, { recursive: true });
     } catch(err: any) {
         throw Error('Unanble to create .git directory', err);
     }
 }
 
-async function writeHeadFile(gitDirPath: string) {
+function writeHeadFile(gitDirPath: string) {
     const filePath = path.join(gitDirPath, 'HEAD');
-    const defaultHeadFile = await fs.readFile(path.resolve(defaultFilesPath , 'HEAD'), 'utf-8');
-    const writeHeadFile = () => fs.writeFile(filePath, defaultHeadFile, 'utf-8');
+    const defaultHeadFile = fs.readFileSync(path.resolve(defaultFilesPath , 'HEAD'), 'utf-8');
+    const writeHeadFile = () => fs.writeFileSync(filePath, defaultHeadFile, 'utf-8');
 
     ensureExists(filePath, writeHeadFile);
 }
 
-async function writeDescriptionFile(gitDirPath: string) {
+function writeDescriptionFile(gitDirPath: string) {
     const filePath = path.join(gitDirPath, 'description');
-    const defaultDescriptionFile = await fs.readFile(path.resolve(defaultFilesPath, 'description'), 'utf-8');
-    const writeDescriptionFile = () => fs.writeFile(filePath, defaultDescriptionFile, 'utf-8');
+    const defaultDescriptionFile = fs.readFileSync(path.resolve(defaultFilesPath, 'description'), 'utf-8');
+    const writeDescriptionFile = () => fs.writeFileSync(filePath, defaultDescriptionFile, 'utf-8');
 
     ensureExists(filePath, writeDescriptionFile);
 }
 
-async function writeConfigFile(gitDirPath: string) {
+function writeConfigFile(gitDirPath: string) {
     const filePath = path.join(gitDirPath, 'config');
-    const defaultConfigFile = await fs.readFile(path.resolve(defaultFilesPath, 'config'), 'utf-8');
-    const writeConfigFile = () => fs.writeFile(filePath, defaultConfigFile, 'utf-8');
+    const defaultConfigFile = fs.readFileSync(path.resolve(defaultFilesPath, 'config'), 'utf-8');
+    const writeConfigFile = () => fs.writeFileSync(filePath, defaultConfigFile, 'utf-8');
 
     ensureExists(filePath, writeConfigFile);
 }
 
-async function createBranchesDir(gitDirPath: string) { 
+function createBranchesDir(gitDirPath: string) { 
     const dirPath = path.join(gitDirPath, 'branches');
     
-    await fs.mkdir(dirPath, { recursive: true });
+    fs.mkdirSync(dirPath, { recursive: true });
 }
 
-async function createObjectsDir(gitDirPath: string) {
+function createObjectsDir(gitDirPath: string) {
     const objectsDirPath = path.join(gitDirPath, 'objects');
-    await fs.mkdir(objectsDirPath, { recursive: true })
+    fs.mkdirSync(objectsDirPath, { recursive: true })
     
     const infoDirPath = path.join(objectsDirPath, 'info');
-    await fs.mkdir(infoDirPath, { recursive: true });
+    fs.mkdirSync(infoDirPath, { recursive: true });
 
     const packDirPath = path.join(objectsDirPath, 'pack');
-    await fs.mkdir(packDirPath, { recursive: true });
+    fs.mkdirSync(packDirPath, { recursive: true });
 }
 
-async function createRefsDir(gitDirPath: string) {
+function createRefsDir(gitDirPath: string) {
     const refsDirPath = path.join(gitDirPath, 'refs');
-    await fs.mkdir(refsDirPath, { recursive: true })
+    fs.mkdirSync(refsDirPath, { recursive: true })
     
     const tagsDirPath = path.join(refsDirPath, 'tags');
-    await fs.mkdir(tagsDirPath, { recursive: true });
+    fs.mkdirSync(tagsDirPath, { recursive: true });
 
     const headsDirPath = path.join(refsDirPath, 'heads');
-    await fs.mkdir(headsDirPath, { recursive: true });
+    fs.mkdirSync(headsDirPath, { recursive: true });
 }
 
 function sendSuccessMessage(gitDirPath: string, quiet: boolean, isReinitialized: boolean) {
     if(!quiet) return `${isReinitialized ? 'Reinitialized existing' : 'Initialized empty'} git repository in ${gitDirPath}` 
 }
 
-export async function init(argvPath: string, argvQuiet: boolean){
+export function init(argvPath: string, argvQuiet: boolean){
     const gitDirPath = path.resolve(process.cwd(), argvPath, '.git');
 
     try {
-        await fs.access(gitDirPath);
+        fs.existsSync(gitDirPath);
         isReinitialized = true;
     } catch {
-        await createGitDir(gitDirPath);
+        createGitDir(gitDirPath);
     }
 
-    await writeHeadFile(gitDirPath);
-    await writeDescriptionFile(gitDirPath);
-    await writeConfigFile(gitDirPath);
-    await createBranchesDir(gitDirPath);
-    await createObjectsDir(gitDirPath);
-    await createRefsDir(gitDirPath);
+    writeHeadFile(gitDirPath);
+    writeDescriptionFile(gitDirPath);
+    writeConfigFile(gitDirPath);
+    createBranchesDir(gitDirPath);
+    createObjectsDir(gitDirPath);
+    createRefsDir(gitDirPath);
     return sendSuccessMessage(gitDirPath, argvQuiet, isReinitialized);
 }

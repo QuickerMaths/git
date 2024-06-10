@@ -29,5 +29,5 @@ export function updateIndex(gitRoot: string, files: string [], add: boolean) {
         index = new GitIndex({ signature: 'DIRC', version: 2 }, entries)
     }
 
-    if(add && !!files.length) await index.write(gitRoot); 
+    if(add && !!files.length) index.write(gitRoot); 
 }
