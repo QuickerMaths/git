@@ -24,7 +24,7 @@ export async function updateIndex(gitRoot: string, files: string [], add: boolea
     let index: GitIndex;
 
     if(await exists(pathToIndex)) {
-        index = await parseIndex(pathToIndex);
+        index = parseIndex(pathToIndex);
         index.add(entries);
     } else {
         index = new GitIndex({ signature: 'DIRC', version: 2 }, entries)

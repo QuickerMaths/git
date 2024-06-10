@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import fs from 'fs';
 import { GitIndex } from '../objects/git-index';
 import { IGitEntry } from '../types/types';
 import { CTIME_OFFSET, CTIME_NANO_OFFSET, MTIME_OFFSET, MTIME_NANO_OFFSET, DEV_OFFSET, INO_OFFSET, MODE_OFFSET, UID_OFFSET, GID_OFFSET, FILES_SIZE_OFFSET, FLAGS_OFFSET, NAME_OFFSET, SHA_OFFSET } from '../constants/constants';
@@ -42,8 +42,8 @@ function parsedEntry(content: Buffer, entryPosition: number) {
     return { nameLength, parsedEntry };
 } 
 
-export async function parseIndex(pathToIndex: string) { 
-    const indexFile = await fs.readFile(pathToIndex);
+export function parseIndex(pathToIndex: string) { 
+    const indexFile = fs.readFileSync(pathToIndex);
     let entryPosition = 0;
 
     const signature = indexFile.subarray(0, 4).toString();

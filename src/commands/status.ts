@@ -103,7 +103,7 @@ export async function setStatus(gitRoot: string, argvPaths: string[], untrackedF
         return fileStatus;
     }
 
-    const index = await parseIndex(pathToIndex);
+    const index = parseIndex(pathToIndex);
 
 
     const headCommitDiff = await headCommitIndexDiff(gitRoot, index);

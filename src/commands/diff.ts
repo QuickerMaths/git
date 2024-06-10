@@ -32,7 +32,7 @@ function getDiff(file1: IFile, file2: IFile, status: FileStatusCode, mode: FileM
 
 export async function diff(gitRoot: string) {
     const pathToIndex = path.resolve(gitRoot, '.git/index'); 
-    const index = await parseIndex(pathToIndex); 
+    const index = parseIndex(pathToIndex); 
     const statusFiles = await setStatus(gitRoot, [], true);
 
     let str = '';
