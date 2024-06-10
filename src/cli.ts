@@ -11,6 +11,7 @@ import { lsTree } from './commands/ls-tree';
 import { commitTree } from './commands/commit-tree';
 import { commit } from './commands/commit';
 import { add } from './commands/add';
+import { diff } from './commands/diff';
 
 async function commandWrapper(callback: () => Promise<string | string[] | Buffer | undefined | void>) {
     try {
@@ -268,6 +269,15 @@ export function cli(args: string[]) {
         async (argv) => {
             const gitRoot = await ensureGitRepo();
             await commandWrapper(() => add(gitRoot, argv.files, argv.all));
+        }
+    )
+    .command(
+        'diff [files..]',
+        'show changes between commits, commit and working tree, etc',
+        (argv) => argv,
+        async (_argv) => {
+            const gitRoot = await ensureGitRepo();
+            await commandWrapper(() => diff(gitRoot));
         }
     )
 }
