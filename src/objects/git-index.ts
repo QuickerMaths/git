@@ -1,5 +1,5 @@
 import { IGitIndex, IGitHeader, IGitEntry } from "../types/types";
-import fs from 'fs/promises';
+import fs from 'fs';
 import { encodeEntry } from "../utils/encodeEntry";
 import { createHash } from "crypto";
 import path from "path";
@@ -29,7 +29,7 @@ export class GitIndex implements IGitIndex {
         return this.entries.find(entry => entry.name === name);
     }
 
-    async write(gitRoot: string) {
+    write(gitRoot: string) {
         const header = Buffer.alloc(12);
         header.set(Buffer.from(this.header.signature), 0);
         header.writeInt32BE(this.header.version, 4);
@@ -49,6 +49,6 @@ export class GitIndex implements IGitIndex {
             'hex'
         );
 
-        await fs.writeFile(path.join(gitRoot, '.git/index'), Buffer.concat([indexContent, checksum]), 'hex');
+        fs.writeFileSync(path.join(gitRoot, '.git/index'), Buffer.concat([indexContent, checksum]), 'hex');
     }
 }

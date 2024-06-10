@@ -41,7 +41,7 @@ function outputIgnoredFiles(ignoredFiles: string[]) {
     return ignoredFilesOutput;
 }
 
-export async function add(gitRoot: string, argvFiles: string[], argvAll: boolean) {
+export function add(gitRoot: string, argvFiles: string[], argvAll: boolean) {
     let files: string[] = [];
     const ignoredFiles: string[] = [];
     const ignore = getGitIgnore(gitRoot);
@@ -54,11 +54,11 @@ export async function add(gitRoot: string, argvFiles: string[], argvAll: boolean
             ignore
         });
 
-        return await updateIndex(gitRoot, files, true);
+        return updateIndex(gitRoot, files, true);
     } 
 
     files = addArgvFiles(gitRoot, argvFiles, ignore, ignoredFiles);
 
-    await updateIndex(gitRoot, files, true);
+    updateIndex(gitRoot, files, true);
     if(!!ignoredFiles.length) return outputIgnoredFiles(ignoredFiles); 
 }

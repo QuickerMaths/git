@@ -4,9 +4,8 @@ import { GitIndex } from '../objects/git-index';
 import { IGitEntry } from '../types/types';
 import { createIndexEntry } from '../utils/createIndexEntry';
 import { parseIndex } from '../utils/parseIndex';
-import { exists } from '../utils/exists';
 
-export async function updateIndex(gitRoot: string, files: string [], add: boolean) {
+export function updateIndex(gitRoot: string, files: string [], add: boolean) {
     const entries: IGitEntry[] = [];
     const pathToIndex = path.resolve(gitRoot, '.git/index');
 
@@ -23,7 +22,7 @@ export async function updateIndex(gitRoot: string, files: string [], add: boolea
     
     let index: GitIndex;
 
-    if(await exists(pathToIndex)) {
+    if(fs.existsSync(pathToIndex)) {
         index = parseIndex(pathToIndex);
         index.add(entries);
     } else {
