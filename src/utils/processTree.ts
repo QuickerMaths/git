@@ -20,7 +20,7 @@ export function prepareTreeOutput(tree: Tree, recursive?: boolean, showTree?: bo
     return treeOutput;
 }
 
-export async function processTree(gitRoot: string, tree: Tree , treeArray: TreeObject[], recursive: boolean) {
+export function processTree(gitRoot: string, tree: Tree , treeArray: TreeObject[], recursive: boolean) {
     const treeObject = treeArray.shift();
     const { content } = parseObject(gitRoot, treeObject?.hash!);
 
@@ -55,6 +55,6 @@ export async function processTree(gitRoot: string, tree: Tree , treeArray: TreeO
         }
     }
 
-    if(treeArray.length > 0) await processTree(gitRoot, tree, treeArray, recursive);
+    if(treeArray.length > 0) processTree(gitRoot, tree, treeArray, recursive);
 }
 

@@ -3,7 +3,7 @@ import { FileMode } from '../enums/enums';
 import { parseObject } from '../utils/parseObject';
 import { processTree, prepareTreeOutput } from '../utils/processTree';
 
-export async function catFile(gitRoot: string, argvType: string, argvObject: string, returnType: boolean, returnSize: boolean, prettyPrint: boolean) {
+export function catFile(gitRoot: string, argvType: string, argvObject: string, returnType: boolean, returnSize: boolean, prettyPrint: boolean) {
     // only one argument can be specified at a time
     let argvCount = [argvType, returnType, returnSize, prettyPrint].filter(Boolean).length;
     if (argvCount !== 1) throw Error('fatal: Invalid usage, only one argument can be specified at a time');
@@ -20,7 +20,7 @@ export async function catFile(gitRoot: string, argvType: string, argvObject: str
         tree.treeRoot = treeRoot; 
 
         const treeArray = [treeRoot];
-        await processTree(gitRoot, tree, treeArray, false);
+        processTree(gitRoot, tree, treeArray, false);
 
         return prepareTreeOutput(tree);
     }
