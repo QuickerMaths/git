@@ -9,7 +9,7 @@ export async function catFile(gitRoot: string, argvType: string, argvObject: str
     if (argvCount !== 1) throw Error('fatal: Invalid usage, only one argument can be specified at a time');
     if(!argvType && !returnType && !returnSize && !prettyPrint) throw Error('fatal: Invalid usage, provide one of [type] | -p | -s | -t');
 
-    const { type, size, content } = await parseObject(gitRoot, argvObject);
+    const { type, size, content } = parseObject(gitRoot, argvObject);
 
     if(!!argvType.length && argvType !== type.toString()) throw Error(`fatal: Invalid type ${argvType}`);
     if(!!argvType.length && argvType === type.toString() || prettyPrint) {
