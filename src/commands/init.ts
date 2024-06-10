@@ -5,9 +5,7 @@ const defaultFilesPath = path.resolve(__dirname, '..', 'default-files')
 let isReinitialized = false;
 
 function ensureExists(dirPath: string, callback: () => void) {
-    try {
-        fs.existsSync(dirPath);
-    } catch {
+    if(!fs.existsSync(dirPath)) {
         callback()
     }
 }
@@ -79,10 +77,9 @@ function sendSuccessMessage(gitDirPath: string, quiet: boolean, isReinitialized:
 export function init(argvPath: string, argvQuiet: boolean){
     const gitDirPath = path.resolve(process.cwd(), argvPath, '.git');
 
-    try {
-        fs.existsSync(gitDirPath);
+    if(fs.existsSync(gitDirPath)) {
         isReinitialized = true;
-    } catch {
+    } else {
         createGitDir(gitDirPath);
     }
 
