@@ -37,53 +37,53 @@ export function diff(gitRoot: string) {
 
     let str = '';
 
-        statusFiles.forEach(file => {
-            switch (file.workTree) {
-                case FileStatusCode.ADDED:
-                    case FileStatusCode.UNTRACKED:
-                    case FileStatusCode.UNMODIFIED:
-                    break;
-                case FileStatusCode.DELETED: {
-                    const entry = index.getEntry(file.name);
-                    const object = parseObject(gitRoot, entry?.sha!);
+    statusFiles.forEach(file => {
+        switch (file.workTree) {
+            case FileStatusCode.ADDED:
+                case FileStatusCode.UNTRACKED:
+                case FileStatusCode.UNMODIFIED:
+                break;
+            case FileStatusCode.DELETED: {
+                const entry = index.getEntry(file.name);
+                const object = parseObject(gitRoot, entry?.sha!);
 
-                    const file1: IFile = {
-                        name: file.name,
-                        content: object.content.toString(),
-                        hash: entry?.sha!
-                    }
-
-                    const file2: IFile = {
-                        name: '/dev/null',
-                        content: '',
-                        hash: ''.padStart(20, '0')
-                    }
-                        
-                    str += getDiff(file1, file2, file.workTree, entry?.modeType!);
-                    break;
+                const file1: IFile = {
+                    name: file.name,
+                    content: object.content.toString(),
+                    hash: entry?.sha!
                 }
-                case FileStatusCode.MODIFIED: {
-                    const entry = index.getEntry(file.name);
-                    const object = parseObject(gitRoot, entry?.sha!);
 
-                    const file1: IFile = {
-                        name: file.name,
-                        content: object.content.toString(),
-                        hash: entry?.sha!
-                    }
-
-                    const hash = hashObject(gitRoot, [file.name], 'blob', false, false) 
-                    const file2: IFile = {
-                        name: file.name,
-                        content: fs.readFileSync(file.name, 'utf-8'),
-                        hash: hash[0] 
-                    }
-                        
-                    str += getDiff(file1, file2, file.workTree, entry?.modeType!);
-                    break;
+                const file2: IFile = {
+                    name: '/dev/null',
+                    content: '',
+                    hash: ''.padStart(20, '0')
                 }
+
+                str += getDiff(file1, file2, file.workTree, entry?.modeType!);
+                break;
             }
-        });
+            case FileStatusCode.MODIFIED: {
+                const entry = index.getEntry(file.name);
+                const object = parseObject(gitRoot, entry?.sha!);
+
+                const file1: IFile = {
+                    name: file.name,
+                    content: object.content.toString(),
+                    hash: entry?.sha!
+                }
+
+                const hash = hashObject(gitRoot, [file.name], 'blob', false, false) 
+                const file2: IFile = {
+                    name: file.name,
+                    content: fs.readFileSync(file.name, 'utf-8'),
+                    hash: hash[0] 
+                }
+
+                str += getDiff(file1, file2, file.workTree, entry?.modeType!);
+                break;
+            }
+        }
+    });
 
     return str;
 }
