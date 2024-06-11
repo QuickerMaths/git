@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from "path";
-import { GitIndex } from '../objects/git-index';
 import { parseIndex } from '../utils/parseIndex';
 import { FileMode, FileStatusCode } from "../enums/enums";
 import { hashObject } from "./hash-object";
@@ -12,7 +11,8 @@ import { processTree } from "../utils/processTree";
 import { IFileStatus, IWorkTreeFilesStats } from "../types/types";
 import { getWorkingTreeFileStats } from "../utils/getWorkingTreeFilesStats";
 
-function headCommitIndexDiff(gitRoot: string, index: GitIndex){
+function headCommitIndexDiff(gitRoot: string){
+    const index = parseIndex(path.join(gitRoot, '.git/index'));
     const statusFiles: Map<string, FileStatusCode> = new Map();
     const currentBranch = getCurrentBranch(gitRoot).trim(); 
     const pathToRef = path.join(gitRoot, '.git/refs/heads', currentBranch);
@@ -46,17 +46,19 @@ function headCommitIndexDiff(gitRoot: string, index: GitIndex){
         } else {
             statusFiles.set(file.path, FileStatusCode.DELETED);
         }
-        index.remove(file.path);
 
-        index.entries.forEach((entry) => {
-            statusFiles.set(entry.name, FileStatusCode.ADDED);
-        });
+        index.remove(file.path);
+    });
+
+    index.entries.forEach((entry) => {
+        statusFiles.set(entry.name, FileStatusCode.ADDED);
     });
 
     return statusFiles;
 }
 
-function workTreeIndexDiff(gitRoot:string, workingTreeFilesStats: Map<string, IWorkTreeFilesStats>, index: GitIndex) {
+function workTreeIndexDiff(gitRoot:string, workingTreeFilesStats: Map<string, IWorkTreeFilesStats>) {
+    const index = parseIndex(path.join(gitRoot, '.git/index'));
     const statusFiles: Map<string, FileStatusCode> = new Map();
     index.entries.map(entry => {
         if(workingTreeFilesStats.has(entry.name)) {
@@ -102,10 +104,7 @@ export function setStatus(gitRoot: string, argvPaths: string[], untrackedFiles: 
         return fileStatus;
     }
 
-    const index = parseIndex(pathToIndex);
-
-
-    const headCommitDiff = headCommitIndexDiff(gitRoot, index);
+    const headCommitDiff = headCommitIndexDiff(gitRoot);
     headCommitDiff.forEach((status, name) => {
         const file: IFileStatus = {
             name,
@@ -116,7 +115,7 @@ export function setStatus(gitRoot: string, argvPaths: string[], untrackedFiles: 
         fileStatus.set(name, file);
     });
 
-    const workTreeDiff = workTreeIndexDiff(gitRoot, workingTreeFilesStats, index); 
+    const workTreeDiff = workTreeIndexDiff(gitRoot, workingTreeFilesStats); 
     workTreeDiff.forEach((status, name) => {
         let file = fileStatus.get(name);
 
