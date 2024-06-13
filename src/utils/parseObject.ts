@@ -19,9 +19,10 @@ export function parseObject(gitRoot: string, argvObject: string) {
     const objectDir = argvObject.slice(0, 2);;
     const pathToObjectDir = path.resolve(gitRoot, '.git/objects', objectDir);
     const objectName = argvObject.substring(2, argvObject.length);
-    const pathToObject = path.join(pathToObjectDir, objectName);
+    const file = fs.readdirSync(pathToObjectDir).filter(file => file.startsWith(objectName))
 
-    if(!fs.existsSync(pathToObject)) throw Error(`fatal: Invalid object ${argvObject}`)
+    if(!file.length) throw Error(`fatal: Invalid object ${argvObject}`)
+    const pathToObject = path.join(pathToObjectDir, file[0]);
     const fileContent = fs.readFileSync(pathToObject);
     const inflatedContent = zlib.inflateSync(fileContent);
 
