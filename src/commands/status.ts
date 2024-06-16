@@ -1,17 +1,15 @@
 import fs from 'fs';
 import path from "path";
 import { parseIndex } from '../utils/parseIndex';
-import { FileMode, FileStatusCode } from "../enums/enums";
+import { FileStatusCode } from "../enums/enums";
 import { hashObject } from "./hash-object";
 import { FgRed, ColorReset, FgGreen } from "../constants/constants";
 import { getCurrentBranch } from "../utils/getCurrentBranch";
-import { Commit } from "../objects/commit";
-import { Tree, TreeObject } from "../objects/tree";
-import { processTree } from "../utils/processTree";
 import { IFileStatus, IWorkTreeFilesStats } from "../types/types";
 import { getWorkingTreeFileStats } from "../utils/getWorkingTreeFilesStats";
+import { getHeadCommitFiles } from '../utils/getHeadCommitFiles';
 
-function headCommitIndexDiff(gitRoot: string){
+export function headCommitIndexDiff(gitRoot: string){
     const index = parseIndex(path.join(gitRoot, '.git/index'));
     const statusFiles: Map<string, FileStatusCode> = new Map();
     const currentBranch = getCurrentBranch(gitRoot).trim(); 
@@ -25,19 +23,7 @@ function headCommitIndexDiff(gitRoot: string){
         return statusFiles;
     }
 
-    const headCommitHash = fs.readFileSync(pathToRef, 'utf-8');
-    const commit = new Commit();
-
-    commit.decodeCommit(gitRoot, headCommitHash.trim());
-
-    const tree = new Tree(); 
-    const treeRoot = new TreeObject(FileMode.DIR, '' , '', commit.hash);
-    tree.treeRoot = treeRoot; 
-
-    const treeArray = [treeRoot];
-    processTree(gitRoot, tree, treeArray, true);
-
-    const treeFiles = Array.from(tree.treeObjects.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    const treeFiles = getHeadCommitFiles(gitRoot, currentBranch);
     treeFiles.forEach(([_name, file]) => {
         const indexEntry = index.getEntry(file.path);
 
