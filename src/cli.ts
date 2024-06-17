@@ -290,8 +290,8 @@ export function cli(args: string[]) {
         }
     )
     .command(
-        'diff [files..]',
-        'show changes between commits, commit and working tree, etc',
+        'diff',
+        'show changes commit and working tree',
         (argv) => argv,
         (_argv) => {
             const gitRoot = ensureGitRepo();
