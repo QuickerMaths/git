@@ -22,7 +22,7 @@ CLI supports:
 
 ```bash
 # Clone this repository
-git clone https://github.com/QuickerMaths/diff
+git clone https://github.com/QuickerMaths/git
 
 # Navigate to the cloned repository
 cd /path/to/cloned/repo
